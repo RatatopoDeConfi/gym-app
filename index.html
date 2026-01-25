@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Symmetry Pro | V20 Fixed</title>
+    <title>Symmetry Pro | V20 Corrected</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -19,29 +19,33 @@
         .header-controls { position: fixed; top: 0; left: 0; width: 100%; height: 75px; background: rgba(10,10,12,0.9); backdrop-filter: blur(15px); display: flex; align-items: center; padding: 0 20px; z-index: 100; border-bottom: 1px solid #222; justify-content: space-between; }
         .menu-icon { font-size: 28px; color: var(--neon); cursor: pointer; }
 
-        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card); z-index: 200; transition: 0.4s; border-right: 1px solid #333; padding: 100px 30px; }
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card); z-index: 200; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid #333; padding: 100px 30px; }
         .sidebar.open { left: 0; }
-        .sidebar-item { padding: 20px 0; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 1px solid #2a2a2a; }
+        .sidebar-item { padding: 20px 0; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 1px solid #2a2a2a; font-size: 0.9rem; }
 
         .card-ejercicio { background: var(--card); border: 1px solid #333; padding: 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .ej-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 12px; }
-        .ej-name { color: var(--neon); font-family: 'Orbitron'; font-size: 0.85rem; font-weight: 700; }
+        .ej-name { color: var(--neon); font-family: 'Orbitron'; font-size: 0.85rem; font-weight: 700; max-width: 60%; }
         
-        .btn-s { background: #2a2a30; border: 1px solid #444; color: var(--text); width: 34px; height: 34px; border-radius: 10px; font-weight: bold; }
+        .controls-series { display: flex; gap: 8px; }
+        .btn-s { background: #2a2a30; border: 1px solid #444; color: var(--text); width: 34px; height: 34px; border-radius: 10px; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
 
         .serie-row { display: grid; grid-template-columns: 40px 1fr 1fr; gap: 12px; margin-bottom: 15px; align-items: center; }
         .serie-num { color: var(--gray); font-weight: 800; font-size: 0.75rem; font-family: 'Orbitron'; }
+        .input-group { position: relative; }
+        .input-group span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.6rem; color: #555; font-weight: 800; text-transform: uppercase; }
         
-        input { background: var(--accent); border: 1px solid #3a3a40; border-radius: 10px; color: #fff; text-align: center; font-size: 1.1rem; padding: 12px 5px; width: 100%; font-weight: 600; }
-        
-        .btn-main { width: 100%; background: var(--neon); border: none; color: #000; padding: 20px; border-radius: 14px; font-weight: 800; cursor: pointer; text-transform: uppercase; margin-top: 10px; font-family: 'Orbitron'; font-size: 0.9rem; }
+        input { background: var(--accent); border: 1px solid #3a3a40; border-radius: 10px; color: #fff; text-align: center; font-size: 1.1rem; padding: 12px 5px; width: 100%; transition: 0.3s; font-weight: 600; }
+        input:focus { border-color: var(--neon); outline: none; background: #2a2a32; }
+
+        .btn-main { width: 100%; background: var(--neon); border: none; color: #000; padding: 20px; border-radius: 14px; font-weight: 800; cursor: pointer; text-transform: uppercase; margin-top: 10px; font-family: 'Orbitron'; font-size: 0.9rem; box-shadow: 0 4px 20px var(--neon-dim); }
 
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .calendar-day { aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; border-radius: 8px; background: #25252b; color: #666; }
-        .day-trained { background: var(--neon) !important; color: #000 !important; font-weight: bold; }
+        .day-trained { background: var(--neon) !important; color: #000 !important; font-weight: bold; box-shadow: 0 0 10px var(--neon-dim); }
 
         .hidden { display: none; }
-        .back-btn { color: var(--gray); cursor: pointer; margin-bottom: 20px; display: inline-block; font-size: 0.75rem; font-weight: 700; }
+        .back-btn { color: var(--gray); cursor: pointer; margin-bottom: 20px; display: inline-block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 150; display: none; }
     </style>
 </head>
@@ -49,28 +53,24 @@
 
     <div class="header-controls">
         <div class="menu-icon" onclick="toggleSidebar()">☰</div>
-        <div class="logo" style="color:var(--neon);">SYMMETRY PRO</div>
+        <div class="logo" style="color:var(--neon); font-size: 0.8rem;">SYMMETRY PRO</div>
     </div>
 
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-    
     <div class="sidebar" id="sidebar">
         <div class="sidebar-item" onclick="changeView('charts')">📊 PROGRESO</div>
         <div class="sidebar-item" onclick="changeView('calendar')">📅 DISCIPLINA</div>
-        <div class="sidebar-item" onclick="changeView('groups')">💪 RUTINAS</div>
+        <div class="sidebar-item" onclick="changeView('groups')">💪 MIS RUTINAS</div>
         <div class="sidebar-item" onclick="changeView('goals')">🎯 OBJETIVOS</div>
-        <div class="sidebar-item" onclick="resetData()" style="color:var(--red);">⚠ RESET</div>
+        <div class="sidebar-item" onclick="resetData()" style="color:var(--red);">⚠ REINICIAR</div>
     </div>
 
-    <div id="view-charts">
-        <canvas id="radarMusculos" style="margin-bottom:30px;"></canvas>
-        <canvas id="lineProgress"></canvas>
-    </div>
+    <div id="view-charts"><canvas id="radarMusculos" style="margin-bottom:30px;"></canvas><canvas id="lineProgress"></canvas></div>
 
     <div id="view-calendar" class="hidden">
         <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <button class="btn-main" style="margin:0; background:#222; color:var(--gray);" onclick="setCalView('month')">MES</button>
-            <button class="btn-main" style="margin:0; background:#222; color:var(--gray);" onclick="setCalView('year')">AÑO</button>
+            <button class="btn-main" style="margin:0; padding:10px; background:#222; color:var(--gray);" onclick="setCalView('month')">MES</button>
+            <button class="btn-main" style="margin:0; padding:10px; background:#222; color:var(--gray);" onclick="setCalView('year')">AÑO</button>
         </div>
         <div id="cal-month-box" class="card-ejercicio">
             <div id="monthLabel" style="text-align:center; color:var(--neon); margin-bottom:15px; font-family:'Orbitron';"></div>
@@ -98,6 +98,8 @@
 
 <script>
 const musculos = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
+const monthNames = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+
 const rutinaMaestraOriginal = [
     { n: 'Push 1', e: [{name:'Press Inclinado',m:'Pecho',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Aperturas Inclinado',m:'Pecho',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Curl Biceps Inclinado',m:'Biceps',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Curl Martillo',m:'Biceps',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Elevaciones Laterales',m:'Hombro',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Press Militar',m:'Hombro',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}]},
     { n: 'Pull 1', e: [{name:'Dominadas',m:'Espalda',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Remo Unilateral',m:'Espalda',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Elevaciones Posteriores',m:'Hombro',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Press Cerrado',m:'Triceps',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Press Frances',m:'Triceps',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Dragon Flags',m:'Core',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}]},
@@ -106,17 +108,17 @@ const rutinaMaestraOriginal = [
     { n: 'Pull 2', e: [{name:'Dominadas',m:'Espalda',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Remo Unilateral',m:'Espalda',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Elevaciones Posteriores',m:'Hombro',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Press Cerrado',m:'Triceps',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Press Frances',m:'Triceps',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}, {name:'Dragon Flags',m:'Core',series:[{p:0,r:0},{p:0,r:0},{p:0,r:0}]}]}
 ];
 
-let db = JSON.parse(localStorage.getItem('gymNeonV22')) || { semanas: [], rutinaMaestra: rutinaMaestraOriginal, objetivosEjercicios: {}, fechasEntreno: [] };
-let activeW = null, activeD = null, radarChart, lineChart, currentCalDate = new Date();
+let db = JSON.parse(localStorage.getItem('gymNeonVFinal')) || { semanas: [], rutinaMaestra: rutinaMaestraOriginal, objetivosEjercicios: {}, fechasEntreno: [] };
+let activeW = null, activeD = null, currentCalDate = new Date();
 
-function save() { localStorage.setItem('gymNeonV22', JSON.stringify(db)); updateCharts(); }
+function save() { localStorage.setItem('gymNeonVFinal', JSON.stringify(db)); updateCharts(); }
 
 function renderEjercicios() {
     const dia = db.semanas[activeW].dias[activeD];
     document.getElementById('ejercicios-container').innerHTML = dia.e.map((ej, ei) => `
         <div class="card-ejercicio">
-            <div class="ej-header"><span class="ej-name">${ej.name}</span><div style="display:flex; gap:5px;"><button class="btn-s" onclick="removeSerie(${ei})">-</button><button class="btn-s" onclick="addSerie(${ei})">+</button></div></div>
-            ${ej.series.map((s, si) => `<div class="serie-row"><div class="serie-num">S${si+1}</div><input type="number" step="0.5" value="${s.p}" onchange="updVal(${ei},${si},'p',this.value)"><input type="number" value="${s.r}" onchange="updVal(${ei},${si},'r',this.value)"></div>`).join('')}
+            <div class="ej-header"><span class="ej-name">${ej.name}</span><div class="controls-series"><button class="btn-s" onclick="removeSerie(${ei})">-</button><button class="btn-s" onclick="addSerie(${ei})">+</button></div></div>
+            ${ej.series.map((s, si) => `<div class="serie-row"><div class="serie-num">SET ${si+1}</div><div class="input-group"><input type="number" step="0.5" value="${s.p}" onchange="updVal(${ei},${si},'p',this.value)"><span>kg</span></div><div class="input-group"><input type="number" value="${s.r}" onchange="updVal(${ei},${si},'r',this.value)"><span>reps</span></div></div>`).join('')}
         </div>`).join('');
 }
 
@@ -126,14 +128,14 @@ function removeSerie(ei) { if(db.semanas[activeW].dias[activeD].e[ei].series.len
 
 function finalizarYPropagarTotal() {
     const diaEditado = db.semanas[activeW].dias[activeD];
-    const tipoRaiz = diaEditado.n.split(' ')[0]; // Detecta "Push", "Pull" o "Legs"
+    const prefijo = diaEditado.n.split(' ')[0]; // Captura "Push", "Pull" o "Legs"
     db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaEditado));
     const hoy = new Date().toISOString().split('T')[0];
     if(!db.fechasEntreno.includes(hoy)) db.fechasEntreno.push(hoy);
 
     db.semanas.forEach((sem, sIdx) => {
         sem.dias.forEach(dia => {
-            if (dia.n.startsWith(tipoRaiz) && sIdx >= activeW) {
+            if (dia.n.startsWith(prefijo) && sIdx >= activeW) {
                 dia.e.forEach(ejF => {
                     const ejActual = diaEditado.e.find(ex => ex.name === ejF.name);
                     if(ejActual) ejF.series = JSON.parse(JSON.stringify(ejActual.series));
@@ -148,9 +150,9 @@ function renderGoals() {
     const ejs = [];
     rutinaMaestraOriginal.forEach(d => d.e.forEach(e => { if(!ejs.includes(e.name)) ejs.push(e.name); }));
     document.getElementById('goals-list').innerHTML = ejs.map(name => `
-        <div class="card-ejercicio" style="padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:0.8rem; font-family:'Orbitron';">${name}</span>
-            <input type="number" id="goal-${name}" style="width:80px; padding:8px;" value="${db.objetivosEjercicios[name] || 0}">
+        <div class="card-ejercicio" style="display:flex; justify-content:space-between; align-items:center; padding:15px;">
+            <span style="font-family:'Orbitron'; font-size:0.7rem;">${name}</span>
+            <input type="number" id="goal-${name}" style="width:100px;" value="${db.objetivosEjercicios[name] || 0}">
         </div>`).join('');
 }
 
@@ -158,7 +160,7 @@ function saveGoals() {
     const ejs = [];
     rutinaMaestraOriginal.forEach(d => d.e.forEach(e => { if(!ejs.includes(e.name)) ejs.push(e.name); }));
     ejs.forEach(name => { db.objetivosEjercicios[name] = parseFloat(document.getElementById('goal-'+name).value) || 0; });
-    save(); alert("Objetivos actualizados");
+    save(); alert("Objetivos Guardados");
 }
 
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').style.display = document.getElementById('overlay').style.display === 'block' ? 'none' : 'block'; }
@@ -167,7 +169,7 @@ function showView(id) { document.querySelectorAll('body > div:not(.header-contro
 function renderGroups() {
     const cont = document.getElementById('groups-container');
     cont.innerHTML = "";
-    for(let i=0; i<Math.ceil(db.semanas.length/12); i++) cont.innerHTML += `<div class="card-ejercicio" onclick="renderWInG(${i})">BLOQUE ${i+1} (Sem ${i*12+1}-${Math.min((i+1)*12, db.semanas.length)})</div>`;
+    for(let i=0; i<Math.ceil(db.semanas.length/12); i++) cont.innerHTML += `<div class="card-ejercicio" onclick="renderWInG(${i})">BLOQUE ${i+1}</div>`;
 }
 function nuevaSemana() { db.semanas.push({ id: db.semanas.length + 1, dias: JSON.parse(JSON.stringify(db.rutinaMaestra)) }); save(); renderGroups(); }
 function renderWInG(gi) {
@@ -182,7 +184,7 @@ function renderCalendar() {
     const grid = document.getElementById('calendarGrid');
     grid.innerHTML = "";
     const y = currentCalDate.getFullYear(), m = currentCalDate.getMonth();
-    document.getElementById('monthLabel').innerText = (m+1) + " / " + y;
+    document.getElementById('monthLabel').innerText = monthNames[m] + " " + y;
     const first = (new Date(y, m, 1).getDay() || 7) - 1;
     for(let i=0; i<first; i++) grid.innerHTML += `<div></div>`;
     for(let d=1; d<=new Date(y, m+1, 0).getDate(); d++) {
@@ -190,6 +192,7 @@ function renderCalendar() {
         grid.innerHTML += `<div class="calendar-day ${db.fechasEntreno.includes(dStr) ? 'day-trained' : ''}">${d}</div>`;
     }
 }
+function setCalView(v) { document.getElementById('cal-month-box').classList.toggle('hidden', v!=='month'); document.getElementById('cal-year-box').classList.toggle('hidden', v!=='year'); renderCalendar(); }
 function updateCharts() {
     const ctxR = document.getElementById('radarMusculos');
     const dataR = musculos.map(m => {
@@ -203,9 +206,9 @@ function updateCharts() {
         return maxs.length ? Math.min(maxs.reduce((a,b)=>a+b)/maxs.length, 100) : 0;
     });
     if(radarChart) radarChart.destroy();
-    radarChart = new Chart(ctxR, { type:'radar', data:{ labels:musculos, datasets:[{data:dataR, borderColor:'#39ff14', backgroundColor:'rgba(57,255,20,0.2)', borderWidth:2}] }, options:{ scales:{r:{min:0,max:100,grid:{color:'#333'},angleLines:{color:'#333'},pointLabels:{color:'#aaa'},ticks:{display:false}}}, plugins:{legend:{display:false}} }});
+    radarChart = new Chart(ctxR, { type:'radar', data:{ labels:musculos, datasets:[{data:dataR, borderColor:'#39ff14', backgroundColor:'rgba(57,255,20,0.2)'}] }, options:{ scales:{r:{min:0,max:100,grid:{color:'#333'},ticks:{display:false}}}, plugins:{legend:{display:false}} }});
 }
-function resetData() { if(confirm("¿RESET TOTAL?")) { localStorage.removeItem('gymNeonV22'); location.reload(); } }
+function resetData() { if(confirm("¿RESET?")) { localStorage.removeItem('gymNeonVFinal'); location.reload(); } }
 
 if(db.semanas.length === 0) nuevaSemana();
 updateCharts(); renderGroups(); renderCalendar();
