@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Pro | Yearly Discipline</title>
+    <title>Symmetry Pro | Yearly Structure</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -25,34 +25,29 @@
 
         .card { background: var(--card); border: 1px solid #222; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
         
-        /* CALENDARIO */
+        /* SELECTOR DE VISTA */
         .view-selector { display: flex; gap: 10px; margin-bottom: 15px; }
         .btn-tab { flex: 1; padding: 10px; background: #1a1a1e; border: 1px solid #333; color: var(--gray); border-radius: 8px; font-size: 0.6rem; font-family: 'Orbitron'; cursor: pointer; }
         .btn-tab.active { border-color: var(--neon); color: var(--neon); background: var(--neon-dim); }
 
+        /* CALENDARIO MENSUAL */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 15px; }
         .calendar-day { aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; border-radius: 4px; background: #1a1a1e; color: #444; }
-        
-        /* VISTA ANUAL */
-        .year-grid { display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px; margin-top: 10px; }
-        .year-dot { width: 100%; aspect-ratio: 1/1; background: #1a1a1e; border-radius: 2px; }
-        .dot-trained { background: var(--neon); box-shadow: 0 0 5px var(--neon-dim); }
-
         .day-trained { background: var(--neon) !important; color: #000 !important; font-weight: bold; }
         .day-current { border: 1px solid var(--neon); color: var(--text); }
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        
-        .ejercicio-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .ej-name { color: var(--text); font-weight: 700; font-size: 0.9rem; }
-        .serie-row { display: grid; grid-template-columns: 0.6fr 1fr 1fr; gap: 15px; margin-bottom: 12px; }
-        .serie-label { font-size: 0.6rem; color: var(--gray); text-transform: uppercase; font-weight: 800; }
-        input { background: var(--accent); border: 1px solid #333; border-radius: 6px; color: var(--neon); text-align: center; font-size: 1rem; padding: 8px; outline: none; width: 100%; }
-        .btn-series { background: #222; border: 1px solid #444; color: var(--text); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; }
+
+        /* VISTA ANUAL ORGANIZADA */
+        .year-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .month-mini-box { margin-bottom: 10px; }
+        .month-name-mini { font-size: 0.5rem; font-family: 'Orbitron'; color: var(--gray); margin-bottom: 4px; text-align: center; }
+        .month-mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+        .dot-year { aspect-ratio: 1/1; background: #1a1a1e; border-radius: 1px; }
+        .dot-trained { background: var(--neon); box-shadow: 0 0 4px var(--neon-dim); }
+
         .btn-main { width: 100%; background: var(--neon); border: none; color: #000; padding: 18px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; margin-top: 10px; font-family: 'Orbitron'; }
         .hidden { display: none; }
         .back-btn { color: var(--gray); cursor: pointer; margin-bottom: 25px; display: inline-block; font-size: 0.8rem; font-weight: 700; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 150; display: none; }
-        canvas { background: rgba(255,255,255,0.02); border-radius: 12px; padding: 10px; margin-bottom: 40px; width: 100% !important; }
     </style>
 </head>
 <body>
@@ -75,39 +70,43 @@
     <div id="view-calendar" class="hidden">
         <h2>Disciplina</h2>
         <div class="view-selector">
-            <button id="btn-month" class="btn-tab active" onclick="setCalView('month')">MES</button>
-            <button id="btn-year" class="btn-tab" onclick="setCalView('year')">AÑO COMPLETO</button>
+            <button id="btn-month" class="btn-tab active" onclick="setCalView('month')">VISTA MES</button>
+            <button id="btn-year" class="btn-tab" onclick="setCalView('year')">VISTA ANUAL</button>
         </div>
 
         <div id="cal-month-box" class="card">
-            <div class="calendar-header">
-                <button class="btn-series" onclick="changeMonth(-1)">‹</button>
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <button class="btn-tab" style="width:40px" onclick="changeMonth(-1)">‹</button>
                 <div id="monthLabel" style="font-family:'Orbitron'; color:var(--neon); font-size:0.8rem;"></div>
-                <button class="btn-series" onclick="changeMonth(1)">›</button>
+                <button class="btn-tab" style="width:40px" onclick="changeMonth(1)">›</button>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
         </div>
 
         <div id="cal-year-box" class="card hidden">
-            <div style="font-family:'Orbitron'; color:var(--neon); font-size:0.8rem; margin-bottom:15px;" id="yearLabel"></div>
-            <div class="year-grid" id="yearGrid"></div>
-            <p style="font-size:0.5rem; color:var(--gray); margin-top:15px;">Cada cuadro representa un día del año actual.</p>
+            <div style="font-family:'Orbitron'; color:var(--neon); font-size:0.8rem; margin-bottom:15px; text-align:center;">MAPA DE DISCIPLINA 2026</div>
+            <div class="year-container" id="yearContainer"></div>
         </div>
     </div>
 
     <div id="view-charts">
-        <canvas id="radarMusculos"></canvas>
+        <canvas id="radarMusculos" style="margin-bottom: 40px;"></canvas>
         <canvas id="lineProgress"></canvas>
     </div>
-
+    <div id="view-groups" class="hidden"><h2>Mis Bloques</h2><div id="groups-container"></div><button class="btn-main" onclick="nuevaSemana()">+ Nueva Semana</button></div>
     <div id="view-goals" class="hidden"><h2>Objetivos</h2><div id="goals-list"></div><button class="btn-main" onclick="saveGoals()">Guardar</button></div>
-    <div id="view-groups" class="hidden"><h2>Bloques</h2><div id="groups-container"></div><button class="btn-main" onclick="nuevaSemana()">+ Nueva Semana</button></div>
     <div id="view-weeks" class="hidden"><span class="back-btn" onclick="showView('groups')">← VOLVER</span><div id="semanas-container"></div></div>
     <div id="view-days" class="hidden"><span class="back-btn" onclick="showView('weeks')">← VOLVER</span><div id="dias-container"></div></div>
-    <div id="view-exercises" class="hidden"><span class="back-btn" onclick="showView('days')">← VOLVER</span><h2 id="day-title-header"></h2><div id="ejercicios-container"></div><button class="btn-main" onclick="finalizarYPropagarTotal()">Guardar Sesión</button></div>
+    <div id="view-exercises" class="hidden">
+        <span class="back-btn" onclick="showView('days')">← VOLVER</span>
+        <h2 id="day-title-header" style="color:var(--neon);"></h2>
+        <div id="ejercicios-container"></div>
+        <button class="btn-main" onclick="finalizarYPropagarTotal()">Guardar y Sincronizar</button>
+    </div>
 
 <script>
 const musculos = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
+const monthNames = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
 let currentCalDate = new Date();
 let currentCalView = 'month';
 
@@ -154,14 +153,14 @@ const rutinaMaestraOriginal = [
     ]}
 ];
 
-let db = JSON.parse(localStorage.getItem('gymNeonV18')) || { 
+let db = JSON.parse(localStorage.getItem('gymNeonV19')) || { 
     semanas: [], rutinaMaestra: rutinaMaestraOriginal, objetivosEjercicios: {}, fechasEntreno: [] 
 };
 
 let activeW = null, activeD = null;
 let radarChart, lineChart;
 
-function save() { localStorage.setItem('gymNeonV18', JSON.stringify(db)); updateCharts(); renderCalendar(); }
+function save() { localStorage.setItem('gymNeonV19', JSON.stringify(db)); updateCharts(); renderCalendar(); }
 
 function setCalView(v) {
     currentCalView = v;
@@ -179,7 +178,6 @@ function renderCalendar() {
         grid.innerHTML = "";
         const year = currentCalDate.getFullYear();
         const month = currentCalDate.getMonth();
-        const monthNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
         label.innerText = `${monthNames[month]} ${year}`;
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -192,32 +190,40 @@ function renderCalendar() {
             grid.innerHTML += `<div class="calendar-day ${isTrained ? 'day-trained' : ''} ${dStr === hoyStr ? 'day-current' : ''}">${d}</div>`;
         }
     } else {
-        const yearGrid = document.getElementById('yearGrid');
-        const yLabel = document.getElementById('yearLabel');
-        yearGrid.innerHTML = "";
-        const year = new Date().getFullYear();
-        yLabel.innerText = `AÑO ${year}`;
+        const yearContainer = document.getElementById('yearContainer');
+        yearContainer.innerHTML = "";
+        const currentYear = new Date().getFullYear();
         
-        // Generar 365/366 días
-        let d = new Date(year, 0, 1);
-        while(d.getFullYear() === year) {
-            const dStr = d.toISOString().split('T')[0];
-            const isTrained = db.fechasEntreno.includes(dStr);
-            yearGrid.innerHTML += `<div class="year-dot ${isTrained ? 'dot-trained' : ''}"></div>`;
-            d.setDate(d.getDate() + 1);
+        for(let m=0; m<12; m++) {
+            let monthHtml = `<div class="month-mini-box"><div class="month-name-mini">${monthNames[m]}</div><div class="month-mini-grid">`;
+            const daysInMonth = new Date(currentYear, m+1, 0).getDate();
+            const firstDay = new Date(currentYear, m, 1).getDay();
+            let startPadding = firstDay === 0 ? 6 : firstDay - 1;
+            
+            for(let p=0; p<startPadding; p++) monthHtml += `<div></div>`;
+            for(let d=1; d<=daysInMonth; d++) {
+                const dStr = `${currentYear}-${String(m+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isTrained = db.fechasEntreno.includes(dStr);
+                monthHtml += `<div class="dot-year ${isTrained ? 'dot-trained' : ''}"></div>`;
+            }
+            monthHtml += `</div></div>`;
+            yearContainer.innerHTML += monthHtml;
         }
     }
 }
 
 function changeMonth(dir) { currentCalDate.setMonth(currentCalDate.getMonth() + dir); renderCalendar(); }
 
-// ... (Todas las funciones previas de sincronización y gráficas se mantienen IDÉNTICAS)
+// --- LÓGICA DE SINCRONIZACIÓN Y GUARDADO ---
 function finalizarYPropagarTotal() {
     const diaEditado = db.semanas[activeW].dias[activeD];
     const prefijoDia = diaEditado.n.split(' ')[0]; 
     db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaEditado));
+    
+    // Registrar fecha
     const hoy = new Date().toISOString().split('T')[0];
     if(!db.fechasEntreno.includes(hoy)) db.fechasEntreno.push(hoy);
+
     db.semanas.forEach((sem, sIdx) => {
         sem.dias.forEach((dia) => {
             if (dia.n.startsWith(prefijoDia)) {
@@ -233,6 +239,7 @@ function finalizarYPropagarTotal() {
     save(); showView('days');
 }
 
+// --- ESTADÍSTICAS ---
 function updateCharts() {
     const ctxRadar = document.getElementById('radarMusculos');
     const dataMuscular = musculos.map(m => {
@@ -264,6 +271,7 @@ function updateCharts() {
     lineChart = new Chart(ctxLine, { type: 'line', data: { labels: Array.from({length: 10}, (_, i) => i + 1), datasets: [{ label: 'Push', data: hist.Push.slice(-10), borderColor: '#39ff14' }, { label: 'Pull', data: hist.Pull.slice(-10), borderColor: '#00d4ff' }, { label: 'Legs', data: hist.Legs.slice(-10), borderColor: '#ff0055' }] }, options: { scales: { y: { grid: { color: '#1a1a1a' } }, x: { display: false } }, plugins: { legend: { labels: { color: '#888', font: { size: 10 } } } } } });
 }
 
+// --- NAVEGACIÓN Y RENDER ---
 function renderEjercicios() {
     const dia = db.semanas[activeW].dias[activeD];
     document.getElementById('ejercicios-container').innerHTML = dia.e.map((ej, ei) => `
@@ -296,7 +304,7 @@ function renderWInG(gi) {
 }
 function openW(i) { activeW = i; document.getElementById('dias-container').innerHTML = db.semanas[i].dias.map((d, di) => `<div class="card" onclick="openD(${di})">${d.n}</div>`).join(''); showView('days'); }
 function openD(di) { activeD = di; document.getElementById('day-title-header').innerText = db.semanas[activeW].dias[activeD].n; renderEjercicios(); showView('exercises'); }
-function resetData() { if(confirm("¿Borrar todo?")) { localStorage.removeItem('gymNeonV18'); location.reload(); } }
+function resetData() { if(confirm("¿Borrar todo?")) { localStorage.removeItem('gymNeonV19'); location.reload(); } }
 
 updateCharts();
 renderGroups();
