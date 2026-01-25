@@ -114,12 +114,10 @@
     <div id="view-goals" class="hidden"><h2>Objetivos</h2><div id="goals-list"></div><button class="btn-main" onclick="saveGoals()">GUARDAR OBJETIVOS</button></div>
 
 <script>
-// --- LÓGICA CORE (NO TOCADA) ---
+// --- LÓGICA CORE ---
 const musculos = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
 const monthNames = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
-let db = JSON.parse(localStorage.getItem('gymNeonV20')) || { semanas: [], rutinaMaestra: [], objetivosEjercicios: {}, fechasEntreno: [] };
 
-// ... (Aquí va la inicialización de rutinaMaestraOriginal de los mensajes previos)
 const rutinaMaestraOriginal = [
     { n: 'Push 1', e: [
         { name: 'Press Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
@@ -163,6 +161,8 @@ const rutinaMaestraOriginal = [
     ]}
 ];
 
+let db = JSON.parse(localStorage.getItem('gymNeonV20')) || { semanas: [], rutinaMaestra: [], objetivosEjercicios: {}, fechasEntreno: [] };
+
 if(db.rutinaMaestra.length === 0) db.rutinaMaestra = rutinaMaestraOriginal;
 
 let activeW = null, activeD = null;
@@ -170,7 +170,6 @@ let currentCalDate = new Date();
 let currentCalView = 'month';
 let radarChart, lineChart;
 
-// --- RENDERIZADO DE ENTRENAMIENTO MEJORADO ---
 function renderEjercicios() {
     const dia = db.semanas[activeW].dias[activeD];
     document.getElementById('ejercicios-container').innerHTML = dia.e.map((ej, ei) => `
@@ -199,14 +198,14 @@ function renderEjercicios() {
     `).join('');
 }
 
-// --- RESTO DE FUNCIONES (Siguen iguales) ---
 function save() { localStorage.setItem('gymNeonV20', JSON.stringify(db)); updateCharts(); renderCalendar(); }
 function updVal(ei, si, f, v) { db.semanas[activeW].dias[activeD].e[ei].series[si][f] = parseFloat(v) || 0; }
 function addSerie(ei) { db.semanas[activeW].dias[activeD].e[ei].series.push({p:0, r:0}); renderEjercicios(); }
 function removeSerie(ei) { if(db.semanas[activeW].dias[activeD].e[ei].series.length > 1) { db.semanas[activeW].dias[activeD].e[ei].series.pop(); renderEjercicios(); } }
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); const over = document.getElementById('overlay'); over.style.display = over.style.display === 'block' ? 'none' : 'block'; }
-function changeView(v) { showView(v); if(v === 'groups') renderGroups(); if(v === 'calendar') renderCalendar(); toggleSidebar(); }
+function changeView(v) { showView(v); if(v === 'groups') renderGroups(); if(v === 'calendar') renderCalendar(); if(v === 'goals') renderGoals(); toggleSidebar(); }
 function showView(id) { document.querySelectorAll('body > div:not(.header-controls):not(.sidebar):not(.overlay)').forEach(d => d.classList.add('hidden')); document.getElementById('view-' + id).classList.remove('hidden'); if(id === 'charts') updateCharts(); }
+
 function renderGroups() {
     const cont = document.getElementById('groups-container');
     const nG = Math.ceil(db.semanas.length / 12);
@@ -226,12 +225,13 @@ function openD(di) { activeD = di; document.getElementById('day-title-header').i
 
 function finalizarYPropagarTotal() {
     const diaEditado = db.semanas[activeW].dias[activeD];
-    const prefijoDia = diaEditado.n.split(' ')[0]; 
+    const prefijoDia = diaEditado.n.split(' ')[0]; // Captura "Push" de "Push 1" o "Push 2"
     db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaEditado));
     const hoy = new Date().toISOString().split('T')[0];
     if(!db.fechasEntreno.includes(hoy)) db.fechasEntreno.push(hoy);
     db.semanas.forEach((sem, sIdx) => {
         sem.dias.forEach((dia) => {
+            // Sincroniza si el nombre empieza igual (ej. Push 1 y Push 2) en esta semana y futuras
             if (dia.n.startsWith(prefijoDia) && sIdx >= activeW) {
                    dia.e.forEach(ejF => {
                         const ejActual = diaEditado.e.find(ex => ex.name === ejF.name);
@@ -241,6 +241,23 @@ function finalizarYPropagarTotal() {
         });
     });
     save(); showView('days');
+}
+
+function renderGoals() {
+    const ejs = [];
+    rutinaMaestraOriginal.forEach(d => d.e.forEach(e => { if(!ejs.includes(e.name)) ejs.push(e.name); }));
+    document.getElementById('goals-list').innerHTML = ejs.map(name => `
+        <div class="card-ejercicio" style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin-bottom:10px;">
+            <span style="font-family:'Orbitron'; font-size:0.7rem;">${name}</span>
+            <input type="number" id="goal-${name}" style="width:100px;" value="${db.objetivosEjercicios[name] || 0}">
+        </div>`).join('');
+}
+
+function saveGoals() {
+    const ejs = [];
+    rutinaMaestraOriginal.forEach(d => d.e.forEach(e => { if(!ejs.includes(e.name)) ejs.push(e.name); }));
+    ejs.forEach(name => { db.objetivosEjercicios[name] = parseFloat(document.getElementById('goal-'+name).value) || 0; });
+    save(); alert("Objetivos Guardados");
 }
 
 function setCalView(v) {
@@ -320,6 +337,7 @@ function updateCharts() {
 }
 function resetData() { if(confirm("¿Borrar todo?")) { localStorage.removeItem('gymNeonV20'); location.reload(); } }
 
+if(db.semanas.length === 0) nuevaSemana();
 updateCharts();
 renderGroups();
 renderCalendar();
