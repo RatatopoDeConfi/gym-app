@@ -3,93 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Neon</title>
+    <title>Symmetry Neon Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
-            --bg: #050505; 
-            --card: #0f0f0f; 
-            --neon: #39ff14; 
-            --neon-dim: rgba(57, 255, 20, 0.2);
-            --text: #ffffff; 
-            --gray: #666;
+            --bg: #050505; --card: #0f0f0f; --neon: #39ff14; 
+            --neon-dim: rgba(57, 255, 20, 0.2); --text: #ffffff; --gray: #666;
         }
         body { 
             font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); 
-            margin: 0; padding: 20px; padding-bottom: 100px;
+            margin: 0; padding: 20px; padding-top: 70px;
         }
-        h2 { text-transform: uppercase; letter-spacing: 2px; color: var(--neon); text-shadow: 0 0 10px var(--neon-dim); font-size: 1.2rem; }
         
-        .card { 
-            background: var(--card); border: 1px solid #222; padding: 18px; border-radius: 8px; 
-            margin-bottom: 15px; transition: 0.3s; position: relative; overflow: hidden;
+        /* MENU HAMBURGUESA */
+        .header { position: fixed; top: 0; left: 0; width: 100%; background: #000; padding: 15px; z-index: 100; display: flex; align-items: center; border-bottom: 1px solid #222; }
+        .menu-btn { cursor: pointer; font-size: 24px; color: var(--neon); margin-right: 20px; }
+        .side-menu { 
+            position: fixed; top: 0; left: -250px; width: 250px; height: 100%; background: #000; 
+            z-index: 200; transition: 0.3s; padding: 40px 20px; border-right: 1px solid var(--neon);
         }
-        .card:active { border-color: var(--neon); box-shadow: 0 0 15px var(--neon-dim); }
+        .side-menu.open { left: 0; }
+        .menu-item { padding: 15px 0; font-weight: bold; color: var(--text); text-transform: uppercase; cursor: pointer; border-bottom: 1px solid #111; }
+        .menu-item:active { color: var(--neon); }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 150; display: none; }
 
+        /* DISEÑO GENERAL */
+        h2 { text-transform: uppercase; color: var(--neon); text-shadow: 0 0 10px var(--neon-dim); font-size: 1.1rem; }
+        .card { background: var(--card); border: 1px solid #222; padding: 18px; border-radius: 8px; margin-bottom: 15px; position: relative; }
         .group-badge { color: var(--neon); font-size: 0.7rem; border: 1px solid var(--neon); padding: 2px 6px; border-radius: 4px; margin-bottom: 10px; display: inline-block; }
-
-        input { 
-            width: 50px; background: transparent; border: none; border-bottom: 1px solid var(--gray); 
-            color: var(--neon); text-align: center; font-size: 1rem; outline: none;
-        }
-        input:focus { border-bottom-color: var(--neon); }
-
+        input { width: 55px; background: transparent; border: none; border-bottom: 1px solid var(--gray); color: var(--neon); text-align: center; font-size: 1rem; outline: none; }
         .ejercicio-row { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
         .label-min { font-size: 0.7rem; color: var(--gray); display: block; }
-
-        .btn-main { 
-            width: 100%; background: transparent; border: 1px solid var(--neon); color: var(--neon); 
-            padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase;
-            box-shadow: inset 0 0 5px var(--neon-dim);
-        }
-
+        .btn-main { width: 100%; background: var(--neon); border: none; color: #000; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        .btn-save-session { background: transparent; border: 1px solid var(--neon); color: var(--neon); margin-top: 20px; box-shadow: 0 0 10px var(--neon-dim); }
         .hidden { display: none; }
-        nav { 
-            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(5,5,5,0.9); 
-            backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 20px 0; border-top: 1px solid #222; 
-        }
-        .nav-item { cursor: pointer; font-size: 0.7rem; color: var(--gray); text-transform: uppercase; font-weight: bold; }
-        .nav-item.active { color: var(--neon); text-shadow: 0 0 8px var(--neon); }
+        .back-link { color: var(--neon); cursor: pointer; display: block; margin-bottom: 15px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
+<div class="header">
+    <div class="menu-btn" onclick="toggleMenu()">☰</div>
+    <div style="font-weight: bold; letter-spacing: 2px;">SYMMETRY</div>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+<div class="side-menu" id="side-menu">
+    <div class="menu-item" onclick="showView('charts')">Gráfica Radar</div>
+    <div class="menu-item" onclick="showView('groups'); renderGroups();">Mis Bloques</div>
+    <div class="menu-item" onclick="toggleMenu()">Cerrar</div>
+</div>
+
 <div id="view-charts">
-    <h2>Estatus de Simetría</h2>
+    <h2>Nivel de Simetría</h2>
     <canvas id="radarMusculos"></canvas>
 </div>
 
 <div id="view-groups" class="hidden">
     <h2>Mis Bloques (12 Sem)</h2>
     <div id="groups-container"></div>
-    <button class="btn-main" onclick="crearNuevaSemana()">+ Registrar Sesión</button>
+    <button class="btn-main" onclick="crearNuevaSemana()">+ NUEVA SEMANA</button>
 </div>
 
 <div id="view-weeks" class="hidden">
-    <button style="background:none; border:none; color:var(--neon); margin-bottom:20px;" onclick="showView('groups')">← VOLVER A BLOQUES</button>
-    <h2 id="group-title">Semanas del Bloque</h2>
+    <span class="back-link" onclick="showView('groups')">← BLOQUES</span>
+    <h2 id="group-title">Semanas</h2>
     <div id="semanas-container"></div>
 </div>
 
 <div id="view-days" class="hidden">
-    <button style="background:none; border:none; color:var(--neon); margin-bottom:20px;" onclick="showView('weeks')">← VOLVER A SEMANAS</button>
-    <h2 id="current-week-title">Semana</h2>
+    <span class="back-link" onclick="showView('weeks')">← SEMANAS</span>
+    <h2 id="current-week-title">Días</h2>
     <div id="dias-container"></div>
 </div>
 
 <div id="view-exercises" class="hidden">
-    <button style="background:none; border:none; color:var(--neon); margin-bottom:20px;" onclick="showView('days')">← VOLVER A DÍAS</button>
+    <span class="back-link" onclick="showView('days')">← DÍAS</span>
     <h2 id="current-day-title">Ejercicios</h2>
     <div id="ejercicios-container"></div>
+    <button class="btn-main btn-save-session" onclick="finalizarEntreno()">✓ GUARDAR Y FINALIZAR</button>
 </div>
 
-<nav>
-    <div class="nav-item active" onclick="showView('charts', this)">Radar</div>
-    <div class="nav-item" onclick="showView('groups', this); renderGroups();">Entreno</div>
-</nav>
-
 <script>
-let db = JSON.parse(localStorage.getItem('gymDataNeon')) || { semanas: [] };
+let db = JSON.parse(localStorage.getItem('gymDataNeonV3')) || { semanas: [] };
 let activeWeekIdx = null;
 let activeDayIdx = null;
 
@@ -117,10 +113,32 @@ const plantillaDias = [
         { nombre: 'Curl Femoral', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
         { nombre: 'Talones De Pie', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
         { nombre: 'Talones Sentado', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 }
+    ]},
+    { nombre: 'Push 2', ejercicios: [
+        { nombre: 'Press Inclinado', musculo: 'Pecho', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Aperturas Inclinado', musculo: 'Pecho', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Curl Biceps Inclinado', musculo: 'Biceps', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Curl Martillo', musculo: 'Biceps', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Elevaciones Laterales', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Press Militar', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 }
+    ]},
+    { nombre: 'Pull 2', ejercicios: [
+        { nombre: 'Dominadas', musculo: 'Espalda', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Remo Unilateral', musculo: 'Espalda', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Elevaciones Posteriores', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Press Cerrado', musculo: 'Triceps', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Press Frances', musculo: 'Triceps', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Dragon Flags', musculo: 'Core', peso: 0, reps: 0, sets: 3 }
     ]}
 ];
 
-function save() { localStorage.setItem('gymDataNeon', JSON.stringify(db)); updateRadar(); }
+function toggleMenu() {
+    document.getElementById('side-menu').classList.toggle('open');
+    const overlay = document.getElementById('overlay');
+    overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
+}
+
+function save() { localStorage.setItem('gymDataNeonV3', JSON.stringify(db)); updateRadar(); }
 
 function crearNuevaSemana() {
     const ultima = db.semanas[db.semanas.length - 1];
@@ -133,36 +151,38 @@ function crearNuevaSemana() {
     renderGroups();
 }
 
+function finalizarEntreno() {
+    save();
+    alert("¡Entreno guardado! Estos valores aparecerán en tu próxima semana.");
+    showView('days');
+}
+
 function renderGroups() {
     const container = document.getElementById('groups-container');
     const numGrupos = Math.ceil(db.semanas.length / 12);
     let html = "";
-    
     for(let i = 0; i < numGrupos; i++) {
         html += `<div class="card" onclick="renderWeeksInGroup(${i})">
             <span class="group-badge">BLOQUE ${i + 1}</span><br>
             Semanas ${i * 12 + 1} a ${Math.min((i + 1) * 12, db.semanas.length)}
         </div>`;
     }
-    container.innerHTML = html || "<p style='color:#444'>No hay entrenos registrados.</p>";
+    container.innerHTML = html || "<p style='color:#444'>Crea tu primera semana para empezar.</p>";
 }
 
-function renderWeeksInGroup(groupIndex) {
-    const container = document.getElementById('semanas-container');
-    const inicio = groupIndex * 12;
+function renderWeeksInGroup(gIdx) {
+    const inicio = gIdx * 12;
     const fin = Math.min(inicio + 12, db.semanas.length);
-    
     let html = "";
     for(let i = inicio; i < fin; i++) {
         html += `<div class="card" onclick="openWeek(${i})">Semana ${db.semanas[i].id}</div>`;
     }
-    container.innerHTML = html;
+    document.getElementById('semanas-container').innerHTML = html;
     showView('weeks');
 }
 
 function openWeek(idx) {
     activeWeekIdx = idx;
-    document.getElementById('current-week-title').innerText = `SEMANA ${db.semanas[idx].id}`;
     document.getElementById('dias-container').innerHTML = db.semanas[idx].dias.map((d, dIdx) => `
         <div class="card" onclick="openDay(${dIdx})">${d.nombre}</div>
     `).join('');
@@ -176,27 +196,23 @@ function openDay(dIdx) {
         <div class="card">
             <strong style="color:var(--neon)">${ej.nombre}</strong>
             <div class="ejercicio-row">
-                <div><span class="label-min">SETS</span><input type="number" value="${ej.sets}" onchange="updateEj(${eIdx}, 'sets', this.value)"></div>
-                <div><span class="label-min">PESO</span><input type="number" value="${ej.peso}" onchange="updateEj(${eIdx}, 'peso', this.value)"></div>
+                <div><span class="label-min">PESO (Kg)</span><input type="number" value="${ej.peso}" onchange="updateEj(${eIdx}, 'peso', this.value)"></div>
                 <div><span class="label-min">REPS</span><input type="number" value="${ej.reps}" onchange="updateEj(${eIdx}, 'reps', this.value)"></div>
+                <div><span class="label-min">SETS</span><input type="number" value="${ej.sets}" onchange="updateEj(${eIdx}, 'sets', this.value)"></div>
             </div>
         </div>
     `).join('');
     showView('exercises');
 }
 
-function updateEj(eIdx, field, value) {
-    db.semanas[activeWeekIdx].dias[activeDayIdx].ejercicios[eIdx][field] = parseFloat(value);
-    save();
+function updateEj(eIdx, field, val) {
+    db.semanas[activeWeekIdx].dias[activeDayIdx].ejercicios[eIdx][field] = parseFloat(val);
 }
 
-function showView(viewId, navEl) {
-    document.querySelectorAll('body > div').forEach(div => div.classList.add('hidden'));
-    document.getElementById('view-' + viewId).classList.remove('hidden');
-    if(navEl) {
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        navEl.classList.add('active');
-    }
+function showView(vId) {
+    document.querySelectorAll('body > div:not(.header):not(.side-menu):not(.overlay)').forEach(div => div.classList.add('hidden'));
+    document.getElementById('view-' + vId).classList.remove('hidden');
+    if(document.getElementById('side-menu').classList.contains('open')) toggleMenu();
 }
 
 let radarChart;
@@ -207,7 +223,7 @@ function updateRadar() {
         let maxScore = 0;
         db.semanas.forEach(s => s.dias.forEach(d => d.ejercicios.forEach(e => {
             if(e.musculo === m) {
-                let score = (e.peso * e.reps) / 100;
+                let score = (e.peso * e.reps) / 1.5; // Ajuste para radar
                 if(score > maxScore) maxScore = score;
             }
         })));
@@ -220,31 +236,18 @@ function updateRadar() {
         data: {
             labels: labels,
             datasets: [{ 
-                label: 'Nivel', 
-                data: dataNiveles, 
-                backgroundColor: 'rgba(57, 255, 20, 0.1)', 
-                borderColor: '#39ff14',
-                borderWidth: 1,
-                pointBackgroundColor: '#39ff14'
+                data: dataNiveles, backgroundColor: 'rgba(57, 255, 20, 0.1)', borderColor: '#39ff14', borderWidth: 2 
             }]
         },
         options: { 
-            scales: { 
-                r: { 
-                    grid: { color: '#222' }, 
-                    angleLines: { color: '#222' },
-                    ticks: { display: false }, 
-                    pointLabels: { color: '#888', font: { size: 10 } },
-                    suggestMin: 0, suggestMax: 100 
-                } 
-            },
+            scales: { r: { grid: { color: '#222' }, angleLines: { color: '#222' }, ticks: { display: false }, pointLabels: { color: '#888' }, suggestMin: 0, suggestMax: 100 } },
             plugins: { legend: { display: false } }
         }
     });
 }
 
-updateRadar();
 renderGroups();
+updateRadar();
 </script>
 </body>
 </html>
