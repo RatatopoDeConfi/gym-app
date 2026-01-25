@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetry App Personal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --bg: #0f0f0f; --card: #1a1a1a; --accent: #00e5ff; --text: #eee; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; padding-bottom: 80px; }
+        .card { background: var(--card); border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 12px; }
+        .ejercicio-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9em; }
+        input { width: 45px; background: #222; border: 1px solid #444; color: #00e5ff; padding: 5px; border-radius: 4px; text-align: center; }
+        .hidden { display: none; }
+        .btn-back { background: none; border: 1px solid var(--accent); color: var(--accent); padding: 5px 10px; border-radius: 5px; margin-bottom: 15px; }
+        nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
+        .nav-item { cursor: pointer; font-size: 0.8em; opacity: 0.6; }
+        .nav-item.active { opacity: 1; color: var(--accent); }
+        h2 { border-left: 4px solid var(--accent); padding-left: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="view-charts">
+    <h2>Mi Simetría</h2>
+    <canvas id="radarMusculos"></canvas>
+</div>
+
+<div id="view-weeks" class="hidden">
+    <h2>Semanas de Entreno</h2>
+    <div id="semanas-container"></div>
+    <button onclick="crearNuevaSemana()" style="width:100%; padding:15px; background:var(--accent); border-radius:10px; border:none; font-weight:bold;">+ EMPEZAR NUEVA SEMANA</button>
+</div>
+
+<div id="view-days" class="hidden">
+    <button class="btn-back" onclick="showView('weeks')">← Volver a Semanas</button>
+    <h2 id="current-week-title">Semana X</h2>
+    <div id="dias-container"></div>
+</div>
+
+<div id="view-exercises" class="hidden">
+    <button class="btn-back" onclick="showView('days')">← Volver a Días</button>
+    <h2 id="current-day-title">Día X</h2>
+    <div id="ejercicios-container"></div>
+</div>
+
+<nav>
+    <div class="nav-item active" onclick="showView('charts', this)">📊 Radar</div>
+    <div class="nav-item" onclick="showView('weeks', this)">💪 Rutina</div>
+</nav>
+
+<script>
+// --- LÓGICA DE DATOS ---
+let db = JSON.parse(localStorage.getItem('gymData')) || { semanas: [] };
+let activeWeekIdx = null;
+let activeDayIdx = null;
+
+const plantillaDias = [
+    { nombre: 'Push 1', ejercicios: [
+        { nombre: 'Press Inclinado', musculo: 'Pecho', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Aperturas Inclinado', musculo: 'Pecho', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Curl Biceps Inclinado', musculo: 'Biceps', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Curl Martillo', musculo: 'Biceps', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Elevaciones Laterales', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Press Militar', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 }
+    ]},
+    { nombre: 'Pull 1', ejercicios: [
+        { nombre: 'Dominadas', musculo: 'Espalda', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Remo Unilateral', musculo: 'Espalda', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Elevaciones Posteriores', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Press Cerrado', musculo: 'Triceps', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Press Frances', musculo: 'Triceps', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Dragon Flags', musculo: 'Core', peso: 0, reps: 0, sets: 3 }
+    ]},
+    { nombre: 'Legs', ejercicios: [
+        { nombre: 'Sentadilla Bulgara', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Sentadilla', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Peso Muerto Manc.', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Curl Femoral', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Talones De Pie', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
+        { nombre: 'Talones Sentado', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 }
+    ]}
+];
+
+function crearNuevaSemana() {
+    const ultima = db.semanas[db.semanas.length - 1];
+    const nueva = {
+        id: db.semanas.length + 1,
+        dias: JSON.parse(JSON.stringify(ultima ? ultima.dias : plantillaDias))
+    };
+    db.semanas.push(nueva);
+    save();
+    renderWeeks();
+}
+
+function save() { localStorage.setItem('gymData', JSON.stringify(db)); updateRadar(); }
+
+// --- NAVEGACIÓN ---
+function showView(viewId, navEl) {
+    document.querySelectorAll('body > div').forEach(div => div.classList.add('hidden'));
+    document.getElementById('view-' + viewId).classList.remove('hidden');
+    if(navEl) {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        navEl.classList.add('active');
+    }
+}
+
+function renderWeeks() {
+    const container = document.getElementById('semanas-container');
+    container.innerHTML = db.semanas.map((s, idx) => `
+        <div class="card" onclick="openWeek(${idx})">Semana ${s.id} <span style="float:right">→</span></div>
+    `).reverse().join('');
+}
+
+function openWeek(idx) {
+    activeWeekIdx = idx;
+    document.getElementById('current-week-title').innerText = `Semana ${db.semanas[idx].id}`;
+    const container = document.getElementById('dias-container');
+    container.innerHTML = db.semanas[idx].dias.map((d, dIdx) => `
+        <div class="card" onclick="openDay(${dIdx})">${d.nombre}</div>
+    `).join('');
+    showView('days');
+}
+
+function openDay(dIdx) {
+    activeDayIdx = dIdx;
+    document.getElementById('current-day-title').innerText = db.semanas[activeWeekIdx].dias[dIdx].nombre;
+    const container = document.getElementById('ejercicios-container');
+    container.innerHTML = db.semanas[activeWeekIdx].dias[dIdx].ejercicios.map((ej, eIdx) => `
+        <div class="card">
+            <strong>${ej.nombre}</strong><br><br>
+            <div class="ejercicio-row">
+                Sets: <input type="number" value="${ej.sets}" onchange="updateEj(${eIdx}, 'sets', this.value)">
+                Kg: <input type="number" value="${ej.peso}" onchange="updateEj(${eIdx}, 'peso', this.value)">
+                Reps: <input type="number" value="${ej.reps}" onchange="updateEj(${eIdx}, 'reps', this.value)">
+            </div>
+        </div>
+    `).join('');
+    showView('exercises');
+}
+
+function updateEj(eIdx, field, value) {
+    db.semanas[activeWeekIdx].dias[activeDayIdx].ejercicios[eIdx][field] = parseFloat(value);
+    save();
+}
+
+// --- RADAR ---
+let radarChart;
+function updateRadar() {
+    const ctx = document.getElementById('radarMusculos');
+    const labels = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
+    
+    // Aquí calculamos el nivel basado en el último entreno
+    const dataNiveles = labels.map(m => {
+        let maxSession = 0;
+        db.semanas.forEach(s => s.dias.forEach(d => d.ejercicios.forEach(e => {
+            if(e.musculo === m) {
+                let score = (e.peso * e.reps) / 100; // Algoritmo simple de fuerza relativa
+                if(score > maxSession) maxSession = score;
+            }
+        })));
+        return Math.min(maxSession, 100); 
+    });
+
+    if(radarChart) radarChart.destroy();
+    radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: labels,
+            datasets: [{ label: 'Nivel Músculo', data: dataNiveles, backgroundColor: 'rgba(0, 229, 255, 0.2)', borderColor: '#00e5ff' }]
+        },
+        options: { scales: { r: { grid: { color: '#333' }, ticks: { display: false }, suggestMin: 0, suggestMax: 100 } } }
+    });
+}
+
+// Inicio
+renderWeeks();
+updateRadar();
+</script>
+</body>
+</html>
