@@ -3,67 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Neon Sidebar</title>
+    <title>Symmetry Neon Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
             --bg: #050505; --card: #0f0f0f; --neon: #39ff14; 
             --neon-dim: rgba(57, 255, 20, 0.2); --text: #ffffff; --gray: #666;
         }
-        body { 
-            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); 
-            margin: 0; padding: 20px; padding-top: 80px; overflow-x: hidden;
-        }
-        
-        /* BOTÓN HAMBURGUESA ARRIBA IZQUIERDA */
-        .header-controls {
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
-            display: flex; align-items: center; padding: 0 20px; z-index: 100;
-            border-bottom: 1px solid #222;
-        }
-        .menu-icon {
-            font-size: 28px; color: var(--neon); cursor: pointer;
-            text-shadow: 0 0 10px var(--neon-dim);
-        }
-
-        /* MENÚ LATERAL DESLIZANTE */
-        .sidebar {
-            position: fixed; top: 0; left: -280px; width: 260px; height: 100%;
-            background: #0a0a0a; z-index: 200; transition: 0.3s ease;
-            border-right: 1px solid var(--neon); padding: 60px 20px;
-            box-shadow: 10px 0 20px rgba(0,0,0,0.5);
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; padding-top: 70px; }
+        .header-controls { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.9); display: flex; align-items: center; padding: 0 20px; z-index: 100; border-bottom: 1px solid #222; }
+        .menu-icon { font-size: 28px; color: var(--neon); cursor: pointer; }
+        .sidebar { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #0a0a0a; z-index: 200; transition: 0.3s; border-right: 1px solid var(--neon); padding: 60px 20px; }
         .sidebar.open { left: 0; }
-        .sidebar-item {
-            padding: 15px 0; font-size: 1.1rem; font-weight: bold;
-            color: var(--text); text-transform: uppercase; cursor: pointer;
-            border-bottom: 1px solid #1a1a1a; letter-spacing: 1px;
-        }
-        .sidebar-item:active { color: var(--neon); }
-
-        /* FONDO OSCURO AL ABRIR MENÚ */
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 150; display: none;
-        }
-
-        /* DISEÑO DE TARJETAS Y CONTENIDO */
-        h2 { text-transform: uppercase; color: var(--neon); font-size: 1.1rem; margin-bottom: 20px; }
+        .sidebar-item { padding: 15px 0; font-weight: bold; color: var(--text); text-transform: uppercase; cursor: pointer; border-bottom: 1px solid #1a1a1a; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 150; display: none; }
         .card { background: var(--card); border: 1px solid #222; padding: 18px; border-radius: 8px; margin-bottom: 15px; }
-        .group-badge { color: var(--neon); font-size: 0.7rem; border: 1px solid var(--neon); padding: 2px 6px; border-radius: 4px; margin-bottom: 10px; display: inline-block; }
         .ejercicio-row { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
         input { width: 55px; background: transparent; border: none; border-bottom: 1px solid var(--gray); color: var(--neon); text-align: center; font-size: 1rem; outline: none; }
         .btn-main { width: 100%; background: var(--neon); border: none; color: #000; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 15px; }
         .hidden { display: none; }
-        .back-btn { color: var(--neon); cursor: pointer; margin-bottom: 20px; display: inline-block; font-size: 0.9rem; }
+        .back-btn { color: var(--neon); cursor: pointer; margin-bottom: 20px; display: inline-block; }
     </style>
 </head>
 <body>
 
     <div class="header-controls">
         <div class="menu-icon" onclick="toggleSidebar()">☰</div>
-        <div style="margin-left: 20px; font-weight: 800; letter-spacing: 2px; font-size: 0.9rem;">SYMMETRY NEON</div>
+        <div style="margin-left: 20px; font-weight: 800; letter-spacing: 2px;">SYMMETRY NEON</div>
     </div>
 
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
@@ -71,7 +37,7 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-item" onclick="changeView('charts')">📊 Radar</div>
         <div class="sidebar-item" onclick="changeView('groups')">💪 Mis Bloques</div>
-        <div class="sidebar-item" style="color: #ff4444; margin-top: 50px;" onclick="toggleSidebar()">Cerrar</div>
+        <div class="sidebar-item" onclick="toggleSidebar()">Cerrar</div>
     </div>
 
     <div id="view-charts">
@@ -86,27 +52,25 @@
     </div>
 
     <div id="view-weeks" class="hidden">
-        <span class="back-btn" onclick="showView('groups')">← VOLVER A BLOQUES</span>
+        <span class="back-btn" onclick="showView('groups')">← VOLVER</span>
         <div id="semanas-container"></div>
     </div>
 
     <div id="view-days" class="hidden">
-        <span class="back-btn" onclick="showView('weeks')">← VOLVER A SEMANAS</span>
+        <span class="back-btn" onclick="showView('weeks')">← VOLVER</span>
         <div id="dias-container"></div>
     </div>
 
     <div id="view-exercises" class="hidden">
-        <span class="back-btn" onclick="showView('days')">← VOLVER A DÍAS</span>
+        <span class="back-btn" onclick="showView('days')">← VOLVER</span>
         <h2 id="day-title-header"></h2>
         <div id="ejercicios-container"></div>
-        <button class="btn-main" style="background:transparent; border: 1px solid var(--neon); color: var(--neon);" onclick="finalizar()">✓ GUARDAR ENTRENAMIENTO</button>
+        <button class="btn-main" onclick="finalizarYActualizarMaestra()">✓ GUARDAR Y ACTUALIZAR MARCAS</button>
     </div>
 
 <script>
-let db = JSON.parse(localStorage.getItem('gymNeonV4')) || { semanas: [] };
-let activeW = null, activeD = null;
-
-const rutinaBase = [
+// RUTINA INICIAL POR DEFECTO
+const rutinaMaestraInicial = [
     { n: 'Push 1', e: [
         { name: 'Press Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 },
         { name: 'Aperturas Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 },
@@ -149,6 +113,39 @@ const rutinaBase = [
     ]}
 ];
 
+// CARGAR DATOS
+let db = JSON.parse(localStorage.getItem('gymNeonV5')) || { 
+    semanas: [], 
+    rutinaMaestra: rutinaMaestraInicial 
+};
+let activeW = null, activeD = null;
+
+function save() { 
+    localStorage.setItem('gymNeonV5', JSON.stringify(db)); 
+    updateRadar(); 
+}
+
+function nuevaSemana() {
+    // IMPORTANTE: Aquí clonamos la "rutinaMaestra" que siempre tiene los últimos valores guardados
+    db.semanas.push({
+        id: db.semanas.length + 1,
+        dias: JSON.parse(JSON.stringify(db.rutinaMaestra))
+    });
+    save(); 
+    renderGroups();
+}
+
+function finalizarYActualizarMaestra() {
+    // Al guardar, actualizamos la rutinaMaestra con los valores de este día actual
+    const diaActualizado = db.semanas[activeW].dias[activeD];
+    db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaActualizado));
+    
+    save();
+    alert("¡Marcas actualizadas! Se usarán en la próxima semana que crees.");
+    showView('days');
+}
+
+// NAVEGACIÓN Y RENDER (Mismo estilo anterior)
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
     const over = document.getElementById('overlay');
@@ -166,21 +163,12 @@ function showView(id) {
     document.getElementById('view-' + id).classList.remove('hidden');
 }
 
-function nuevaSemana() {
-    const last = db.semanas[db.semanas.length - 1];
-    db.semanas.push({
-        id: db.semanas.length + 1,
-        dias: JSON.parse(JSON.stringify(last ? last.dias : rutinaBase))
-    });
-    save(); renderGroups();
-}
-
 function renderGroups() {
     const cont = document.getElementById('groups-container');
     const nG = Math.ceil(db.semanas.length / 12);
     cont.innerHTML = "";
     for(let i=0; i<nG; i++) {
-        cont.innerHTML += `<div class="card" onclick="renderWInG(${i})"><span class="group-badge">BLOQUE ${i+1}</span><br>Sem. ${i*12+1} - ${Math.min((i+1)*12, db.semanas.length)}</div>`;
+        cont.innerHTML += `<div class="card" onclick="renderWInG(${i})"><span style="color:var(--neon); font-size:0.7rem; border:1px solid var(--neon); padding:2px 4px;">BLOQUE ${i+1}</span><br><br>Sem. ${i*12+1} - ${Math.min((i+1)*12, db.semanas.length)}</div>`;
     }
 }
 
@@ -215,9 +203,9 @@ function openD(di) {
     showView('exercises');
 }
 
-function upd(ei, f, v) { db.semanas[activeW].dias[activeD].e[ei][f] = parseFloat(v); }
-function save() { localStorage.setItem('gymNeonV4', JSON.stringify(db)); updateRadar(); }
-function finalizar() { save(); alert("Sesión guardada"); showView('days'); }
+function upd(ei, f, v) { 
+    db.semanas[activeW].dias[activeD].e[ei][f] = parseFloat(v); 
+}
 
 let chart;
 function updateRadar() {
@@ -239,6 +227,7 @@ function updateRadar() {
 }
 
 updateRadar();
+renderGroups();
 </script>
 </body>
 </html>
