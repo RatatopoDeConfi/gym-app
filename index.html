@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Pro | Mi Rutina</title>
+    <title>Symmetry Pro | Sync Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -80,15 +80,14 @@
     </div>
 
     <div id="view-charts">
-        <h3 style="font-size: 0.7rem; color: var(--gray);">Maestría Muscular (Objetivo individual)</h3>
+        <h3 style="font-size: 0.7rem; color: var(--gray);">Maestría Muscular (%)</h3>
         <canvas id="radarMusculos"></canvas>
-        <h3 style="font-size: 0.7rem; color: var(--gray);">Progresión de Volumen (Fuerza Total)</h3>
+        <h3 style="font-size: 0.7rem; color: var(--gray);">Volumen de Fuerza (Histórico)</h3>
         <canvas id="lineProgress"></canvas>
     </div>
 
     <div id="view-goals" class="hidden">
-        <h2>Objetivos de Peso</h2>
-        <p style="color:var(--gray); font-size: 0.7rem; margin-bottom: 20px;">Indica el peso que quieres alcanzar en cada uno.</p>
+        <h2>Objetivos de Fuerza</h2>
         <div id="goals-list"></div>
         <button class="btn-main" onclick="saveGoals()">Guardar Objetivos</button>
     </div>
@@ -96,22 +95,21 @@
     <div id="view-groups" class="hidden">
         <h2>Mis Bloques</h2>
         <div id="groups-container"></div>
-        <button class="btn-main" onclick="nuevaSemana()">+ Empezar Nueva Semana</button>
+        <button class="btn-main" onclick="nuevaSemana()">+ Nueva Semana</button>
     </div>
 
-    <div id="view-weeks" class="hidden"><span class="back-btn" onclick="showView('groups')">← BLOQUES</span><div id="semanas-container"></div></div>
-    <div id="view-days" class="hidden"><span class="back-btn" onclick="showView('weeks')">← SEMANAS</span><div id="dias-container"></div></div>
+    <div id="view-weeks" class="hidden"><span class="back-btn" onclick="showView('groups')">← VOLVER</span><div id="semanas-container"></div></div>
+    <div id="view-days" class="hidden"><span class="back-btn" onclick="showView('weeks')">← VOLVER</span><div id="dias-container"></div></div>
     <div id="view-exercises" class="hidden">
-        <span class="back-btn" onclick="showView('days')">← VOLVER AL DÍA</span>
+        <span class="back-btn" onclick="showView('days')">← VOLVER</span>
         <h2 id="day-title-header" style="color:var(--neon); font-size: 1.2rem;"></h2>
         <div id="ejercicios-container"></div>
-        <button class="btn-main" onclick="finalizarYPropagarTotal()">Guardar Sesión</button>
+        <button class="btn-main" onclick="finalizarYPropagarTotal()">Guardar y Sincronizar</button>
     </div>
 
 <script>
 const musculos = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
 
-// RUTINA MAESTRA RESTAURADA SEGÚN TUS DATOS
 const rutinaMaestraOriginal = [
     { n: 'Push 1', e: [
         { name: 'Press Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
@@ -155,26 +153,56 @@ const rutinaMaestraOriginal = [
     ]}
 ];
 
-let objetivosInic = {};
-rutinaMaestraOriginal.forEach(d => d.e.forEach(ej => objetivosInic[ej.name] = 100));
-
-let db = JSON.parse(localStorage.getItem('gymNeonV14')) || { 
+let db = JSON.parse(localStorage.getItem('gymNeonV15')) || { 
     semanas: [], 
     rutinaMaestra: rutinaMaestraOriginal,
-    objetivosEjercicios: objetivosInic
+    objetivosEjercicios: {}
 };
+
+// Inicializar objetivos si está vacío
+if(Object.keys(db.objetivosEjercicios).length === 0) {
+    rutinaMaestraOriginal.forEach(d => d.e.forEach(ej => db.objetivosEjercicios[ej.name] = 100));
+}
 
 let activeW = null, activeD = null;
 let radarChart, lineChart;
 
-function save() { localStorage.setItem('gymNeonV14', JSON.stringify(db)); updateCharts(); }
+function save() { localStorage.setItem('gymNeonV15', JSON.stringify(db)); updateCharts(); }
 
+// --- LÓGICA DE SINCRONIZACIÓN CLAVE ---
+function finalizarYPropagarTotal() {
+    const diaEditado = db.semanas[activeW].dias[activeD];
+    const prefijoDia = diaEditado.n.split(' ')[1] ? diaEditado.n.split(' ')[0] : diaEditado.n; 
+    
+    // 1. Actualizar la Rutina Maestra para futuros bloques
+    db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaEditado));
+
+    // 2. Sincronizar todos los días del mismo tipo (Push/Pull/Legs) en TODAS las semanas
+    db.semanas.forEach((sem, sIdx) => {
+        sem.dias.forEach((dia, dIdx) => {
+            // Si es un día del mismo tipo (ej: Push 1 y Push 2) Y es el mismo día o futuro
+            if (dia.n.startsWith(prefijoDia)) {
+                if (sIdx > activeW || (sIdx === activeW)) {
+                   dia.e.forEach(ejF => {
+                        const ejActual = diaEditado.e.find(ex => ex.name === ejF.name);
+                        if(ejActual) ejF.series = JSON.parse(JSON.stringify(ejActual.series));
+                   });
+                }
+            }
+        });
+    });
+
+    save();
+    showView('days');
+}
+
+// --- RESTO DE FUNCIONES ---
 function renderGoals() {
     const cont = document.getElementById('goals-list');
-    let listaEjs = [...new Set(rutinaMaestraOriginal.flatMap(d => d.e.map(ej => ej.name)))];
-    cont.innerHTML = listaEjs.map(ej => `
+    let ejsUnicos = [...new Set(rutinaMaestraOriginal.flatMap(d => d.e.map(ej => ej.name)))];
+    cont.innerHTML = ejsUnicos.map(ej => `
         <div class="card" style="padding:15px">
-            <div style="font-size:0.75rem; margin-bottom:8px">${ej}</div>
+            <div style="font-size:0.75rem; margin-bottom:8px; color:var(--gray)">${ej}</div>
             <input type="number" value="${db.objetivosEjercicios[ej] || 100}" onchange="db.objetivosEjercicios['${ej}'] = parseFloat(this.value)">
         </div>
     `).join('');
@@ -260,25 +288,6 @@ function updVal(ei, si, field, val) { db.semanas[activeW].dias[activeD].e[ei].se
 function addSerie(ei) { db.semanas[activeW].dias[activeD].e[ei].series.push({p:0, r:0}); renderEjercicios(); }
 function removeSerie(ei) { if(db.semanas[activeW].dias[activeD].e[ei].series.length > 1) { db.semanas[activeW].dias[activeD].e[ei].series.pop(); renderEjercicios(); } }
 
-function finalizarYPropagarTotal() {
-    const diaEditado = db.semanas[activeW].dias[activeD];
-    const tipoDia = diaEditado.n.split(' ')[0];
-    db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaEditado));
-    for (let i = activeW; i < db.semanas.length; i++) {
-        db.semanas[i].dias.forEach((d, dIdx) => {
-            if (i > activeW || (i === activeW && dIdx > activeD)) {
-                if (d.n.startsWith(tipoDia)) {
-                    d.e.forEach(ejF => {
-                        const ejActual = diaEditado.e.find(ex => ex.name === ejF.name);
-                        if(ejActual) ejF.series = JSON.parse(JSON.stringify(ejActual.series));
-                    });
-                }
-            }
-        });
-    }
-    save(); showView('days');
-}
-
 function toggleSidebar() { 
     document.getElementById('sidebar').classList.toggle('open'); 
     const over = document.getElementById('overlay');
@@ -316,7 +325,7 @@ function renderWInG(gi) {
 }
 function openW(i) { activeW = i; document.getElementById('dias-container').innerHTML = db.semanas[i].dias.map((d, di) => `<div class="card" onclick="openD(${di})">${d.n}</div>`).join(''); showView('days'); }
 function openD(di) { activeD = di; document.getElementById('day-title-header').innerText = db.semanas[activeW].dias[activeD].n; renderEjercicios(); showView('exercises'); }
-function resetData() { if(confirm("¿Borrar todo?")) { localStorage.removeItem('gymNeonV14'); location.reload(); } }
+function resetData() { if(confirm("¿Borrar todo?")) { localStorage.removeItem('gymNeonV15'); location.reload(); } }
 
 updateCharts();
 renderGroups();
