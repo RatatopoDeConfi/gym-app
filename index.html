@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Neon Dynamic</title>
+    <title>Symmetry Neon Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
@@ -15,7 +15,7 @@
         .menu-icon { font-size: 28px; color: var(--neon); cursor: pointer; }
         .sidebar { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #0a0a0a; z-index: 200; transition: 0.3s; border-right: 1px solid var(--neon); padding: 60px 20px; }
         .sidebar.open { left: 0; }
-        .sidebar-item { padding: 15px 0; font-weight: bold; color: var(--text); text-transform: uppercase; cursor: pointer; border-bottom: 1px solid #1a1a1a; }
+        .sidebar-item { padding: 15px 0; font-weight: bold; color: var(--text); text-transform: uppercase; cursor: pointer; border-bottom: 1px solid #1a1a1a; font-size: 0.8rem; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 150; display: none; }
         
         .card { background: var(--card); border: 1px solid #222; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
@@ -23,17 +23,16 @@
         .ej-name { color: var(--neon); font-weight: bold; font-size: 0.9rem; }
         
         .serie-row { display: grid; grid-template-columns: 0.5fr 1fr 1fr; gap: 10px; align-items: center; margin-bottom: 8px; }
-        .serie-label { font-size: 0.65rem; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; }
+        .serie-label { font-size: 0.65rem; color: var(--gray); text-transform: uppercase; }
         
         input { background: transparent; border: none; border-bottom: 1px solid #333; color: var(--text); text-align: center; font-size: 0.95rem; padding: 4px; outline: none; width: 100%; }
         input:focus { border-bottom-color: var(--neon); }
 
-        .btn-series { background: #1a1a1a; border: 1px solid #333; color: var(--text); padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-        .btn-series:active { border-color: var(--neon); color: var(--neon); }
-        
+        .btn-series { background: #1a1a1a; border: 1px solid #333; color: var(--text); padding: 2px 8px; border-radius: 4px; cursor: pointer; }
         .btn-main { width: 100%; background: var(--neon); border: none; color: #000; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 15px; }
         .hidden { display: none; }
         .back-btn { color: var(--neon); cursor: pointer; margin-bottom: 20px; display: inline-block; font-size: 0.8rem; }
+        canvas { margin-bottom: 30px; }
     </style>
 </head>
 <body>
@@ -46,14 +45,23 @@
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
     
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-item" onclick="changeView('charts')">📊 Radar</div>
+        <div class="sidebar-item" onclick="changeView('charts')">📊 Estadísticas</div>
         <div class="sidebar-item" onclick="changeView('groups')">💪 Mis Bloques</div>
+        <div class="sidebar-item" onclick="changeView('goals')">🎯 Mis Objetivos</div>
         <div class="sidebar-item" onclick="toggleSidebar()">Cerrar</div>
     </div>
 
     <div id="view-charts">
-        <h2>Estatus Muscular</h2>
+        <h3 style="color:var(--neon)">Radar de Potencial</h3>
         <canvas id="radarMusculos"></canvas>
+        <h3 style="color:var(--neon)">Evolución de Fuerza</h3>
+        <canvas id="lineProgress"></canvas>
+    </div>
+
+    <div id="view-goals" class="hidden">
+        <h2>Objetivos (1RM deseado)</h2>
+        <div id="goals-list"></div>
+        <button class="btn-main" onclick="saveGoals()">GUARDAR OBJETIVOS</button>
     </div>
 
     <div id="view-groups" class="hidden">
@@ -62,99 +70,120 @@
         <button class="btn-main" onclick="nuevaSemana()">+ CREAR NUEVA SEMANA</button>
     </div>
 
-    <div id="view-weeks" class="hidden">
-        <span class="back-btn" onclick="showView('groups')">← VOLVER</span>
-        <div id="semanas-container"></div>
-    </div>
-
-    <div id="view-days" class="hidden">
-        <span class="back-btn" onclick="showView('weeks')">← VOLVER</span>
-        <div id="dias-container"></div>
-    </div>
-
+    <div id="view-weeks" class="hidden"><span class="back-btn" onclick="showView('groups')">← VOLVER</span><div id="semanas-container"></div></div>
+    <div id="view-days" class="hidden"><span class="back-btn" onclick="showView('weeks')">← VOLVER</span><div id="dias-container"></div></div>
     <div id="view-exercises" class="hidden">
         <span class="back-btn" onclick="showView('days')">← VOLVER</span>
         <h2 id="day-title-header"></h2>
         <div id="ejercicios-container"></div>
-        <button class="btn-main" onclick="finalizarYPropagarTotal()">✓ GUARDAR Y ACTUALIZAR FUTURO</button>
+        <button class="btn-main" onclick="finalizarYPropagarTotal()">✓ GUARDAR ENTRENAMIENTO</button>
     </div>
 
 <script>
-// Base de datos inicial con series dinámicas
+// Datos base
+const musculos = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
 const rutinaMaestraInicial = [
-    { n: 'Push 1', e: [
-        { name: 'Press Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Aperturas Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Curl Biceps Inclinado', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Curl Martillo', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Elevaciones Laterales', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Press Militar', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
-    ]},
-    { n: 'Pull 1', e: [
-        { name: 'Dominadas', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Remo Unilateral', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Elevaciones Posteriores', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Press Cerrado', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Press Frances', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Dragon Flags', m: 'Core', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
-    ]},
-    { n: 'Legs', e: [
-        { name: 'Sentadilla Bulgara', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Sentadilla', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Peso Muerto Manc.', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Curl Femoral', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Gemelos Pie', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Gemelos Sentado', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
-    ]},
-    { n: 'Push 2', e: [
-        { name: 'Press Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Aperturas Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Curl Biceps Inclinado', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Curl Martillo', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Elevaciones Laterales', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Press Militar', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
-    ]},
-    { n: 'Pull 2', e: [
-        { name: 'Dominadas', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Remo Unilateral', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Elevaciones Posteriores', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Press Cerrado', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Press Frances', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Dragon Flags', m: 'Core', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
-    ]}
+    { n: 'Push 1', e: [{ name: 'Press Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Aperturas Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Curl Biceps Inclinado', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Curl Martillo', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Elevaciones Laterales', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Press Militar', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }]},
+    { n: 'Pull 1', e: [{ name: 'Dominadas', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Remo Unilateral', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Elevaciones Posteriores', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Press Cerrado', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Press Frances', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Dragon Flags', m: 'Core', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }]},
+    { n: 'Legs', e: [{ name: 'Sentadilla Bulgara', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Sentadilla', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Peso Muerto Manc.', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Curl Femoral', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Gemelos Pie', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Gemelos Sentado', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }]},
+    { n: 'Push 2', e: [{ name: 'Press Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Aperturas Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Curl Biceps Inclinado', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Curl Martillo', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Elevaciones Laterales', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Press Militar', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }]},
+    { n: 'Pull 2', e: [{ name: 'Dominadas', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Remo Unilateral', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Elevaciones Posteriores', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Press Cerrado', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Press Frances', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Dragon Flags', m: 'Core', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }]}
 ];
 
-let db = JSON.parse(localStorage.getItem('gymNeonV10')) || { semanas: [], rutinaMaestra: rutinaMaestraInicial };
+let db = JSON.parse(localStorage.getItem('gymNeonV11')) || { 
+    semanas: [], 
+    rutinaMaestra: rutinaMaestraInicial,
+    objetivos: { 'Pecho': 100, 'Espalda': 100, 'Pierna': 150, 'Hombro': 80, 'Biceps': 50, 'Triceps': 50 }
+};
 let activeW = null, activeD = null;
+let radarChart, lineChart;
 
-function save() { localStorage.setItem('gymNeonV10', JSON.stringify(db)); updateRadar(); }
+function save() { localStorage.setItem('gymNeonV11', JSON.stringify(db)); updateCharts(); }
 
-function addSerie(ei) {
-    db.semanas[activeW].dias[activeD].e[ei].series.push({p:0, r:0});
-    renderEjercicios();
+// GESTIÓN DE OBJETIVOS
+function renderGoals() {
+    const cont = document.getElementById('goals-list');
+    cont.innerHTML = musculos.map(m => `
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>${m} (Kg)</span>
+            <input type="number" value="${db.objetivos[m]}" onchange="db.objetivos['${m}'] = parseFloat(this.value)" style="width:80px">
+        </div>
+    `).join('');
+}
+function saveGoals() { save(); alert("Objetivos actualizados"); toggleSidebar(); }
+
+// GRÁFICOS
+function updateCharts() {
+    // 1. RADAR (Actual vs Objetivos)
+    const ctxRadar = document.getElementById('radarMusculos');
+    const actualData = musculos.map(m => {
+        let max = 0;
+        db.semanas.forEach(s => s.dias.forEach(d => d.e.forEach(e => {
+            if(e.m === m) e.series.forEach(serie => {
+                let r1m = serie.p * (1 + serie.r / 30); // Ecuación Epley
+                if(r1m > max) max = r1m;
+            });
+        })));
+        return max;
+    });
+
+    if(radarChart) radarChart.destroy();
+    radarChart = new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+            labels: musculos,
+            datasets: [
+                { label: 'Actual', data: actualData, backgroundColor: 'rgba(57, 255, 20, 0.4)', borderColor: '#39ff14', borderWidth: 2 },
+                { label: 'Objetivo', data: musculos.map(m => db.objetivos[m]), backgroundColor: 'transparent', borderColor: 'rgba(255,255,255,0.2)', borderDash: [5, 5], borderWidth: 1 }
+            ]
+        },
+        options: { scales: { r: { grid: { color: '#222' }, pointLabels: { color: '#888' }, ticks: { display: false } } }, plugins: { legend: { display: false } } }
+    });
+
+    // 2. LÍNEA (Progresión Cronológica Unificada)
+    const ctxLine = document.getElementById('lineProgress');
+    const historial = { Push: [], Pull: [], Legs: [] };
+    
+    db.semanas.forEach(s => {
+        s.dias.forEach(d => {
+            const cat = d.n.split(' ')[0];
+            if(historial[cat]) {
+                let fuerzaTotal = 0;
+                d.e.forEach(ej => ej.series.forEach(ser => fuerzaTotal += (ser.p * ser.r)));
+                if(fuerzaTotal > 0) historial[cat].push(fuerzaTotal);
+            }
+        });
+    });
+
+    if(lineChart) lineChart.destroy();
+    lineChart = new Chart(ctxLine, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: Math.max(historial.Push.length, historial.Pull.length, historial.Legs.length)}, (_, i) => i + 1),
+            datasets: [
+                { label: 'Empuje', data: historial.Push, borderColor: '#39ff14', tension: 0.3 },
+                { label: 'Tirón', data: historial.Pull, borderColor: '#00ccff', tension: 0.3 },
+                { label: 'Pierna', data: historial.Legs, borderColor: '#ff0055', tension: 0.3 }
+            ]
+        },
+        options: { scales: { y: { grid: { color: '#111' } }, x: { grid: { display: false } } }, plugins: { legend: { labels: { color: '#fff' } } } }
+    });
 }
 
-function removeSerie(ei) {
-    if(db.semanas[activeW].dias[activeD].e[ei].series.length > 1) {
-        db.semanas[activeW].dias[activeD].e[ei].series.pop();
-        renderEjercicios();
-    }
-}
+// LÓGICA DE ENTRENAMIENTO (Misma anterior)
+function addSerie(ei) { db.semanas[activeW].dias[activeD].e[ei].series.push({p:0, r:0}); renderEjercicios(); }
+function removeSerie(ei) { if(db.semanas[activeW].dias[activeD].e[ei].series.length > 1) { db.semanas[activeW].dias[activeD].e[ei].series.pop(); renderEjercicios(); } }
+function updVal(ei, si, field, val) { db.semanas[activeW].dias[activeD].e[ei].series[si][field] = parseFloat(val) || 0; }
 
 function renderEjercicios() {
     const dia = db.semanas[activeW].dias[activeD];
     document.getElementById('ejercicios-container').innerHTML = dia.e.map((ej, ei) => `
         <div class="card">
-            <div class="ejercicio-header">
-                <span class="ej-name">${ej.name}</span>
-                <div>
-                    <button class="btn-series" onclick="removeSerie(${ei})">-</button>
-                    <button class="btn-series" onclick="addSerie(${ei})">+</button>
-                </div>
-            </div>
-            <div class="serie-row">
-                <div class="serie-label">Set</div><div class="serie-label">Kg</div><div class="serie-label">Reps</div>
-            </div>
+            <div class="ejercicio-header"><span class="ej-name">${ej.name}</span><div>
+                <button class="btn-series" onclick="removeSerie(${ei})">-</button>
+                <button class="btn-series" onclick="addSerie(${ei})">+</button>
+            </div></div>
+            <div class="serie-row"><div class="serie-label">Set</div><div class="serie-label">Kg</div><div class="serie-label">Reps</div></div>
             ${ej.series.map((s, si) => `
                 <div class="serie-row">
                     <div style="color:var(--neon); font-size:0.8rem">#${si+1}</div>
@@ -166,18 +195,10 @@ function renderEjercicios() {
     `).join('');
 }
 
-function updVal(ei, si, field, val) {
-    db.semanas[activeW].dias[activeD].e[ei].series[si][field] = parseFloat(val) || 0;
-}
-
 function finalizarYPropagarTotal() {
     const diaEditado = db.semanas[activeW].dias[activeD];
     const tipoDia = diaEditado.n.split(' ')[0];
-
-    // Actualizar Maestra
     db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaEditado));
-
-    // Propagar a futuro
     for (let i = activeW; i < db.semanas.length; i++) {
         db.semanas[i].dias.forEach((d, dIdx) => {
             if (i > activeW || (i === activeW && dIdx > activeD)) {
@@ -190,34 +211,35 @@ function finalizarYPropagarTotal() {
             }
         });
     }
-    save();
-    alert("Progreso guardado.");
-    showView('days');
+    save(); showView('days');
 }
 
-// FUNCIONES DE INTERFAZ BÁSICAS
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
+// NAVEGACIÓN
+function toggleSidebar() { 
+    document.getElementById('sidebar').classList.toggle('open'); 
     const over = document.getElementById('overlay');
     over.style.display = over.style.display === 'block' ? 'none' : 'block';
 }
-function changeView(v) { showView(v); if(v === 'groups') renderGroups(); toggleSidebar(); }
+function changeView(v) { 
+    showView(v); 
+    if(v === 'groups') renderGroups(); 
+    if(v === 'goals') renderGoals();
+    toggleSidebar(); 
+}
 function showView(id) {
     document.querySelectorAll('body > div:not(.header-controls):not(.sidebar):not(.overlay)').forEach(d => d.classList.add('hidden'));
     document.getElementById('view-' + id).classList.remove('hidden');
+    if(id === 'charts') updateCharts();
 }
 function renderGroups() {
     const cont = document.getElementById('groups-container');
     const nG = Math.ceil(db.semanas.length / 12);
-    cont.innerHTML = nG === 0 ? "<p style='color:#444'>Crea tu primera semana.</p>" : "";
+    cont.innerHTML = "";
     for(let i=0; i<nG; i++) {
         cont.innerHTML += `<div class="card" onclick="renderWInG(${i})"><span style="color:var(--neon); font-size:0.7rem; border:1px solid var(--neon); padding:2px 4px;">BLOQUE ${i+1}</span><br><br>Semanas ${i*12+1} - ${Math.min((i+1)*12, db.semanas.length)}</div>`;
     }
 }
-function nuevaSemana() {
-    db.semanas.push({ id: db.semanas.length + 1, dias: JSON.parse(JSON.stringify(db.rutinaMaestra)) });
-    save(); renderGroups();
-}
+function nuevaSemana() { db.semanas.push({ id: db.semanas.length + 1, dias: JSON.parse(JSON.stringify(db.rutinaMaestra)) }); save(); renderGroups(); }
 function renderWInG(gi) {
     const start = gi*12, end = Math.min(start+12, db.semanas.length);
     let h = "";
@@ -225,40 +247,10 @@ function renderWInG(gi) {
     document.getElementById('semanas-container').innerHTML = h;
     showView('weeks');
 }
-function openW(i) {
-    activeW = i;
-    document.getElementById('dias-container').innerHTML = db.semanas[i].dias.map((d, di) => `<div class="card" onclick="openD(${di})">${d.n}</div>`).join('');
-    showView('days');
-}
-function openD(di) {
-    activeD = di;
-    document.getElementById('day-title-header').innerText = db.semanas[activeW].dias[activeD].n;
-    renderEjercicios();
-    showView('exercises');
-}
+function openW(i) { activeW = i; document.getElementById('dias-container').innerHTML = db.semanas[i].dias.map((d, di) => `<div class="card" onclick="openD(${di})">${d.n}</div>`).join(''); showView('days'); }
+function openD(di) { activeD = di; document.getElementById('day-title-header').innerText = db.semanas[activeW].dias[activeD].n; renderEjercicios(); showView('exercises'); }
 
-let chart;
-function updateRadar() {
-    const ctx = document.getElementById('radarMusculos');
-    const labels = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
-    const data = labels.map(m => {
-        let max = 0;
-        db.semanas.forEach(s => s.dias.forEach(d => d.e.forEach(e => {
-            if(e.m === m) e.series.forEach(serie => {
-                let sc = (serie.p * serie.r)/2; 
-                if(sc > max) max = sc;
-            });
-        })));
-        return Math.min(max, 100);
-    });
-    if(chart) chart.destroy();
-    chart = new Chart(ctx, {
-        type: 'radar',
-        data: { labels, datasets: [{ data, backgroundColor: 'rgba(57, 255, 20, 0.1)', borderColor: '#39ff14', borderWidth: 2 }] },
-        options: { scales: { r: { grid: { color: '#222' }, angleLines: { color: '#222' }, pointLabels: { color: '#888' }, ticks: { display: false }, suggestMax: 100 } }, plugins: { legend: { display: false } } }
-    });
-}
-updateRadar();
+updateCharts();
 renderGroups();
 </script>
 </body>
