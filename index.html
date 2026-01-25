@@ -225,20 +225,36 @@ function openD(di) { activeD = di; document.getElementById('day-title-header').i
 
 function finalizarYPropagarTotal() {
     const diaEditado = db.semanas[activeW].dias[activeD];
-    const prefijoDia = diaEditado.n.split(' ')[0]; // Captura "Push" de "Push 1" o "Push 2"
+    const prefijoDia = diaEditado.n.split(' ')[0]; // Captura "Push", "Pull" o "Legs"
+    
+    // Actualizar Rutina Maestra para futuras semanas nuevas
     db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaEditado));
+    
+    // Si editamos un Push 1, buscamos el Push 2 en la maestra para que también se actualice
+    db.rutinaMaestra.forEach(rmD => {
+        if(rmD.n.startsWith(prefijoDia)) {
+            rmD.e.forEach(ejMaestra => {
+                const ejEditado = diaEditado.e.find(ex => ex.name === ejMaestra.name);
+                if(ejEditado) ejMaestra.series = JSON.parse(JSON.stringify(ejEditado.series));
+            });
+        }
+    });
+
     const hoy = new Date().toISOString().split('T')[0];
     if(!db.fechasEntreno.includes(hoy)) db.fechasEntreno.push(hoy);
+
+    // Propagar a todas las semanas existentes desde la actual hacia adelante
     db.semanas.forEach((sem, sIdx) => {
-        sem.dias.forEach((dia) => {
-            // Sincroniza si el nombre empieza igual (ej. Push 1 y Push 2) en esta semana y futuras
-            if (dia.n.startsWith(prefijoDia) && sIdx >= activeW) {
-                   dia.e.forEach(ejF => {
-                        const ejActual = diaEditado.e.find(ex => ex.name === ejF.name);
-                        if(ejActual) ejF.series = JSON.parse(JSON.stringify(ejActual.series));
-                   });
-            }
-        });
+        if (sIdx >= activeW) {
+            sem.dias.forEach((dia) => {
+                if (dia.n.startsWith(prefijoDia)) {
+                       dia.e.forEach(ejF => {
+                            const ejActual = diaEditado.e.find(ex => ex.name === ejF.name);
+                            if(ejActual) ejF.series = JSON.parse(JSON.stringify(ejActual.series));
+                       });
+                }
+            });
+        }
     });
     save(); showView('days');
 }
