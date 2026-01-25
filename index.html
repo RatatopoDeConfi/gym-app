@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Pro | Stealth Edition</title>
+    <title>Symmetry Pro | Full Routine</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -19,38 +19,26 @@
         }
         h1, h2, h3, .logo { font-family: 'Orbitron', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
 
-        /* Header & Sidebar */
         .header-controls { 
             position: fixed; top: 0; left: 0; width: 100%; height: 70px; 
             background: rgba(10,10,12,0.8); backdrop-filter: blur(10px);
             display: flex; align-items: center; padding: 0 25px; z-index: 100; 
             border-bottom: 1px solid #222; justify-content: space-between;
         }
-        .menu-icon { font-size: 24px; color: var(--neon); cursor: pointer; transition: 0.3s; }
-        .menu-icon:hover { text-shadow: 0 0 10px var(--neon); }
+        .menu-icon { font-size: 24px; color: var(--neon); cursor: pointer; }
 
         .sidebar { 
             position: fixed; top: 0; left: -280px; width: 280px; height: 100%; 
-            background: var(--card); z-index: 200; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            background: var(--card); z-index: 200; transition: 0.4s; 
             border-right: 1px solid var(--neon-dim); padding: 80px 30px; 
         }
-        .sidebar.open { left: 0; box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
-        .sidebar-item { 
-            padding: 18px 0; font-weight: 600; color: var(--gray); 
-            cursor: pointer; border-bottom: 1px solid #222; transition: 0.3s;
-        }
-        .sidebar-item:hover { color: var(--neon); padding-left: 10px; }
+        .sidebar.open { left: 0; }
+        .sidebar-item { padding: 18px 0; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 1px solid #222; }
 
-        /* Cards & UI Elements */
-        .card { 
-            background: var(--card); border: 1px solid #222; padding: 20px; 
-            border-radius: 12px; margin-bottom: 20px; position: relative;
-            transition: transform 0.2s;
-        }
-        .card:active { transform: scale(0.98); }
+        .card { background: var(--card); border: 1px solid #222; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
         
         .ejercicio-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .ej-name { color: var(--text); font-weight: 700; font-size: 1rem; }
+        .ej-name { color: var(--text); font-weight: 700; font-size: 0.9rem; }
         
         .serie-row { display: grid; grid-template-columns: 0.6fr 1fr 1fr; gap: 15px; margin-bottom: 12px; }
         .serie-label { font-size: 0.6rem; color: var(--gray); text-transform: uppercase; font-weight: 800; }
@@ -58,36 +46,29 @@
         input { 
             background: var(--accent); border: 1px solid #333; border-radius: 6px;
             color: var(--neon); text-align: center; font-size: 1rem; padding: 8px; 
-            outline: none; width: 100%; transition: 0.3s;
+            outline: none; width: 100%; 
         }
-        input:focus { border-color: var(--neon); box-shadow: 0 0 8px var(--neon-dim); }
+        input:focus { border-color: var(--neon); }
 
-        .btn-series { 
-            background: #222; border: 1px solid #444; color: var(--text); 
-            width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 1.2rem;
-        }
+        .btn-series { background: #222; border: 1px solid #444; color: var(--text); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; }
         .btn-main { 
             width: 100%; background: var(--neon); border: none; color: #000; 
             padding: 18px; border-radius: 12px; font-weight: 800; cursor: pointer; 
             text-transform: uppercase; margin-top: 10px; font-family: 'Orbitron';
-            box-shadow: 0 4px 15px var(--neon-dim); transition: 0.3s;
         }
-        .btn-main:hover { background: #32e612; transform: translateY(-2px); }
 
         .hidden { display: none; }
         .back-btn { color: var(--gray); cursor: pointer; margin-bottom: 25px; display: inline-block; font-size: 0.8rem; font-weight: 700; }
-        .back-btn:hover { color: var(--neon); }
-
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 150; display: none; }
 
-        canvas { background: rgba(255,255,255,0.02); border-radius: 12px; padding: 10px; margin-bottom: 40px; }
+        canvas { background: rgba(255,255,255,0.02); border-radius: 12px; padding: 10px; margin-bottom: 40px; width: 100% !important; }
     </style>
 </head>
 <body>
 
     <div class="header-controls">
         <div class="menu-icon" onclick="toggleSidebar()">☰</div>
-        <div class="logo" style="color:var(--neon); font-size: 1.1rem;">SYMMETRY PRO</div>
+        <div class="logo" style="color:var(--neon); font-size: 0.9rem;">SYMMETRY PRO</div>
     </div>
 
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
@@ -100,17 +81,17 @@
     </div>
 
     <div id="view-charts">
-        <h3 style="font-size: 0.8rem; color: var(--gray);">Balance Muscular (vs Objetivos)</h3>
+        <h3 style="font-size: 0.7rem; color: var(--gray);">Maestría Muscular (%)</h3>
         <canvas id="radarMusculos"></canvas>
-        <h3 style="font-size: 0.8rem; color: var(--gray);">Curva de Fuerza Combinada</h3>
+        <h3 style="font-size: 0.7rem; color: var(--gray);">Evolución de Volumen (Kg totales)</h3>
         <canvas id="lineProgress"></canvas>
     </div>
 
     <div id="view-goals" class="hidden">
-        <h2 style="font-size: 1.2rem;">Objetivos por Ejercicio</h2>
-        <p style="color:var(--gray); font-size: 0.8rem; margin-bottom: 20px;">Define el peso máximo (1RM) que quieres alcanzar en cada uno.</p>
+        <h2>Objetivos 1RM</h2>
+        <p style="color:var(--gray); font-size: 0.7rem; margin-bottom: 20px;">Peso máximo objetivo para cada ejercicio.</p>
         <div id="goals-list"></div>
-        <button class="btn-main" onclick="saveGoals()">Guardar Perfil</button>
+        <button class="btn-main" onclick="saveGoals()">Guardar Objetivos</button>
     </div>
 
     <div id="view-groups" class="hidden">
@@ -119,28 +100,66 @@
         <button class="btn-main" onclick="nuevaSemana()">+ Nueva Semana</button>
     </div>
 
-    <div id="view-weeks" class="hidden"><span class="back-btn" onclick="showView('groups')">← BLOQUES</span><div id="semanas-container"></div></div>
-    <div id="view-days" class="hidden"><span class="back-btn" onclick="showView('weeks')">← SEMANAS</span><div id="dias-container"></div></div>
+    <div id="view-weeks" class="hidden"><span class="back-btn" onclick="showView('groups')">← VOLVER</span><div id="semanas-container"></div></div>
+    <div id="view-days" class="hidden"><span class="back-btn" onclick="showView('weeks')">← VOLVER</span><div id="dias-container"></div></div>
     <div id="view-exercises" class="hidden">
-        <span class="back-btn" onclick="showView('days')">← DÍAS</span>
-        <h2 id="day-title-header" style="color:var(--neon)"></h2>
+        <span class="back-btn" onclick="showView('days')">← VOLVER</span>
+        <h2 id="day-title-header" style="color:var(--neon); font-size: 1.2rem;"></h2>
         <div id="ejercicios-container"></div>
-        <button class="btn-main" onclick="finalizarYPropagarTotal()">Finalizar Sesión</button>
+        <button class="btn-main" onclick="finalizarYPropagarTotal()">Guardar Sesión</button>
     </div>
 
 <script>
 const musculos = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
+
+// RUTINA COMPLETA DE 5 DÍAS RESTAURADA
 const rutinaMaestraInicial = [
-    { n: 'Push 1', e: [{ name: 'Press Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Aperturas Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Curl Biceps Inclinado', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Curl Martillo', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Elevaciones Laterales', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Press Militar', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }]},
-    { n: 'Pull 1', e: [{ name: 'Dominadas', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Remo Unilateral', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Elevaciones Posteriores', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Press Cerrado', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Press Frances', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Dragon Flags', m: 'Core', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }]},
-    { n: 'Legs', e: [{ name: 'Sentadilla Bulgara', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Sentadilla', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Peso Muerto Manc.', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Curl Femoral', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Gemelos Pie', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }, { name: 'Gemelos Sentado', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }]}
+    { n: 'Push 1', e: [
+        { name: 'Press Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Aperturas Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Curl Biceps Inclinado', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Curl Martillo', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Elevaciones Laterales', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Press Militar', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
+    ]},
+    { n: 'Pull 1', e: [
+        { name: 'Dominadas', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Remo Unilateral', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Elevaciones Posteriores', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Press Cerrado', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Press Frances', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Dragon Flags', m: 'Core', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
+    ]},
+    { n: 'Legs', e: [
+        { name: 'Sentadilla Bulgara', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Sentadilla', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Peso Muerto Manc.', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Curl Femoral', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Gemelos Pie', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Gemelos Sentado', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
+    ]},
+    { n: 'Push 2', e: [
+        { name: 'Press Plano', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Cruces Polea', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Curl Spider', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Curl Concentrado', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Elevaciones Frontales', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Facepulls', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
+    ]},
+    { n: 'Pull 2', e: [
+        { name: 'Jalon al Pecho', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Remo en Polea', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Extensiones Triceps', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Kickbacks', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Rueda Abdominal', m: 'Core', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
+    ]}
 ];
 
-// Generamos lista de ejercicios únicos para objetivos
+// Generar lista de objetivos
 let objetivosIniciales = {};
 rutinaMaestraInicial.forEach(d => d.e.forEach(ej => objetivosIniciales[ej.name] = 100));
 
-let db = JSON.parse(localStorage.getItem('gymNeonV12')) || { 
+let db = JSON.parse(localStorage.getItem('gymNeonV13')) || { 
     semanas: [], 
     rutinaMaestra: rutinaMaestraInicial,
     objetivosEjercicios: objetivosIniciales
@@ -149,15 +168,15 @@ let db = JSON.parse(localStorage.getItem('gymNeonV12')) || {
 let activeW = null, activeD = null;
 let radarChart, lineChart;
 
-function save() { localStorage.setItem('gymNeonV12', JSON.stringify(db)); updateCharts(); }
+function save() { localStorage.setItem('gymNeonV13', JSON.stringify(db)); updateCharts(); }
 
-// RENDER OBJETIVOS ESPECIFICOS
+// OBJETIVOS
 function renderGoals() {
     const cont = document.getElementById('goals-list');
     let html = "";
     for (let ej in db.objetivosEjercicios) {
         html += `<div class="card" style="padding:15px">
-            <div style="font-size:0.8rem; margin-bottom:10px">${ej}</div>
+            <div style="font-size:0.75rem; margin-bottom:8px">${ej}</div>
             <input type="number" value="${db.objetivosEjercicios[ej]}" onchange="db.objetivosEjercicios['${ej}'] = parseFloat(this.value)">
         </div>`;
     }
@@ -165,9 +184,8 @@ function renderGoals() {
 }
 function saveGoals() { save(); alert("Objetivos Guardados"); changeView('charts'); }
 
-// GRÁFICOS MEJORADOS
+// GRÁFICOS
 function updateCharts() {
-    // 1. RADAR (Basado en porcentaje de cumplimiento de todos los ejercicios del músculo)
     const ctxRadar = document.getElementById('radarMusculos');
     const dataMuscular = musculos.map(m => {
         let porcentajes = [];
@@ -183,30 +201,16 @@ function updateCharts() {
             }
         })));
         if(porcentajes.length === 0) return 0;
-        let avg = porcentajes.reduce((a,b) => a+b, 0) / porcentajes.length;
-        return Math.min(avg, 100); // Tope 100%
+        return Math.min(porcentajes.reduce((a,b) => a+b, 0) / porcentajes.length, 100);
     });
 
     if(radarChart) radarChart.destroy();
     radarChart = new Chart(ctxRadar, {
         type: 'radar',
-        data: {
-            labels: musculos,
-            datasets: [{ 
-                data: dataMuscular, 
-                backgroundColor: 'rgba(57, 255, 20, 0.2)', 
-                borderColor: '#39ff14', 
-                pointBackgroundColor: '#39ff14',
-                borderWidth: 2 
-            }]
-        },
-        options: { 
-            scales: { r: { min: 0, max: 100, grid: { color: '#222' }, angleLines: { color: '#222' }, pointLabels: { color: '#888', font: { size: 10 } }, ticks: { display: false } } },
-            plugins: { legend: { display: false } } 
-        }
+        data: { labels: musculos, datasets: [{ data: dataMuscular, backgroundColor: 'rgba(57, 255, 20, 0.2)', borderColor: '#39ff14', borderWidth: 2 }] },
+        options: { scales: { r: { min: 0, max: 100, grid: { color: '#222' }, angleLines: { color: '#222' }, pointLabels: { color: '#888' }, ticks: { display: false } } }, plugins: { legend: { display: false } } }
     });
 
-    // 2. LÍNEA (Progresión Cronológica Unificada)
     const ctxLine = document.getElementById('lineProgress');
     const historial = { Push: [], Pull: [], Legs: [] };
     db.semanas.forEach(s => {
@@ -224,35 +228,27 @@ function updateCharts() {
     lineChart = new Chart(ctxLine, {
         type: 'line',
         data: {
-            labels: Array.from({length: 10}, (_, i) => i + 1),
+            labels: Array.from({length: 8}, (_, i) => i + 1),
             datasets: [
-                { label: 'Push', data: historial.Push, borderColor: '#39ff14', tension: 0.4, borderCapStyle: 'round' },
+                { label: 'Push', data: historial.Push, borderColor: '#39ff14', tension: 0.4 },
                 { label: 'Pull', data: historial.Pull, borderColor: '#00d4ff', tension: 0.4 },
                 { label: 'Legs', data: historial.Legs, borderColor: '#ff0055', tension: 0.4 }
             ]
         },
-        options: { 
-            scales: { y: { grid: { color: '#1a1a1a' }, ticks: { color: '#555' } }, x: { grid: { display: false } } },
-            plugins: { legend: { labels: { color: '#888', usePointStyle: true, font: { size: 10 } } } }
-        }
+        options: { scales: { y: { grid: { color: '#1a1a1a' } }, x: { grid: { display: false } } }, plugins: { legend: { labels: { color: '#888', font: { size: 10 } } } } }
     });
 }
 
-// LOGICA ENTRENAMIENTO
+// ENTRENAMIENTO
 function renderEjercicios() {
     const dia = db.semanas[activeW].dias[activeD];
     document.getElementById('ejercicios-container').innerHTML = dia.e.map((ej, ei) => `
         <div class="card">
-            <div class="ejercicio-header">
-                <span class="ej-name">${ej.name}</span>
-                <div>
-                    <button class="btn-series" onclick="removeSerie(${ei})">-</button>
-                    <button class="btn-series" onclick="addSerie(${ei})">+</button>
-                </div>
-            </div>
-            <div class="serie-row">
-                <div class="serie-label">Set</div><div class="serie-label">Peso</div><div class="serie-label">Reps</div>
-            </div>
+            <div class="ejercicio-header"><span class="ej-name">${ej.name}</span><div>
+                <button class="btn-series" onclick="removeSerie(${ei})">-</button>
+                <button class="btn-series" onclick="addSerie(${ei})">+</button>
+            </div></div>
+            <div class="serie-row"><div class="serie-label">Set</div><div class="serie-label">Kg</div><div class="serie-label">Reps</div></div>
             ${ej.series.map((s, si) => `
                 <div class="serie-row">
                     <div style="color:var(--neon); font-size:0.8rem; font-weight:bold">#${si+1}</div>
@@ -287,7 +283,7 @@ function finalizarYPropagarTotal() {
     save(); showView('days');
 }
 
-// NAVEGACIÓN GENERAL
+// NAVEGACIÓN
 function toggleSidebar() { 
     document.getElementById('sidebar').classList.toggle('open'); 
     const over = document.getElementById('overlay');
@@ -310,8 +306,8 @@ function renderGroups() {
     cont.innerHTML = "";
     for(let i=0; i<nG; i++) {
         cont.innerHTML += `<div class="card" onclick="renderWInG(${i})">
-            <div style="font-size:0.7rem; color:var(--neon); margin-bottom:5px">BLOQUE ${i+1}</div>
-            <div style="font-weight:bold">Semanas ${i*12+1} - ${Math.min((i+1)*12, db.semanas.length)}</div>
+            <div style="font-size:0.6rem; color:var(--neon); margin-bottom:5px">BLOQUE ${i+1}</div>
+            <div style="font-weight:bold; font-size:0.9rem">Semanas ${i*12+1} - ${Math.min((i+1)*12, db.semanas.length)}</div>
         </div>`;
     }
 }
@@ -325,7 +321,7 @@ function renderWInG(gi) {
 }
 function openW(i) { activeW = i; document.getElementById('dias-container').innerHTML = db.semanas[i].dias.map((d, di) => `<div class="card" onclick="openD(${di})">${d.n}</div>`).join(''); showView('days'); }
 function openD(di) { activeD = di; document.getElementById('day-title-header').innerText = db.semanas[activeW].dias[activeD].n; renderEjercicios(); showView('exercises'); }
-function resetData() { if(confirm("¿Borrar todo el progreso?")) { localStorage.removeItem('gymNeonV12'); location.reload(); } }
+function resetData() { if(confirm("¿Borrar todo?")) { localStorage.removeItem('gymNeonV13'); location.reload(); } }
 
 updateCharts();
 renderGroups();
