@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Symmetry Pro | Clean Slate</title>
+    <title>Symmetry Pro | V22</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -63,7 +63,7 @@
         <span class="back-btn" onclick="showView('days')">← VOLVER</span>
         <h2 id="day-title" style="color:var(--neon); font-family:'Orbitron';"></h2>
         <div id="ejercicios-container"></div>
-        <button class="btn-main" onclick="finalizarYPropagar()">GUARDAR Y ACTUALIZAR FUTURO</button>
+        <button class="btn-main" onclick="finalizarYPropagar()">GUARDAR SESIÓN</button>
     </div>
 
     <div id="view-goals" class="hidden">
@@ -77,7 +77,6 @@
     </div>
 
 <script>
-// 1. ESTRUCTURA MAESTRA CON TODO A 0
 const rutinaBase = [
     { n: 'Push 1', e: [
         { name: 'Press Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
@@ -120,12 +119,11 @@ const rutinaBase = [
     ]}
 ];
 
-let db = JSON.parse(localStorage.getItem('gymSlimV21')) || { semanas: [], rutinaMaestra: JSON.parse(JSON.stringify(rutinaBase)), objetivos: {}, historial: [] };
+let db = JSON.parse(localStorage.getItem('gymSlimV22')) || { semanas: [], rutinaMaestra: JSON.parse(JSON.stringify(rutinaBase)), objetivos: {} };
 let actW = null, actD = null;
 let radarChart;
 
-// --- FUNCIONES ---
-function save() { localStorage.setItem('gymSlimV21', JSON.stringify(db)); updateRadar(); }
+function save() { localStorage.setItem('gymSlimV22', JSON.stringify(db)); updateRadar(); }
 
 function nuevaSemana() {
     db.semanas.push({ id: db.semanas.length + 1, dias: JSON.parse(JSON.stringify(db.rutinaMaestra)) });
@@ -134,9 +132,8 @@ function nuevaSemana() {
 
 function finalizarYPropagar() {
     const diaEditado = db.semanas[actW].dias[actD];
-    const tipo = diaEditado.n.split(' ')[0]; // "Push", "Pull" o "Legs"
+    const tipo = diaEditado.n.split(' ')[0];
 
-    // 1. Actualizar Rutina Maestra
     db.rutinaMaestra.forEach(rmD => {
         if(rmD.n.startsWith(tipo)) {
             rmD.e.forEach(ejM => {
@@ -146,9 +143,8 @@ function finalizarYPropagar() {
         }
     });
 
-    // 2. Propagar solo a semanas ACTUAL y FUTURAS
     db.semanas.forEach((sem, sIdx) => {
-        if(sIdx >= actW) { // <--- NO toca el pasado
+        if(sIdx >= actW) {
             sem.dias.forEach(dia => {
                 if(dia.n.startsWith(tipo)) {
                     dia.e.forEach(ejF => {
@@ -159,7 +155,6 @@ function finalizarYPropagar() {
             });
         }
     });
-
     save();
     showView('days');
 }
@@ -214,13 +209,13 @@ function renderGoals() {
 function saveGoals() {
     const nms = []; rutinaBase.forEach(d => d.e.forEach(e => { if(!nms.includes(e.name)) nms.push(e.name); }));
     nms.forEach(n => db.objetivos[n] = parseFloat(document.getElementById('g-'+n).value) || 0);
-    save(); alert("Ok");
+    save(); alert("Objetivos Guardados");
 }
 
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); const o = document.getElementById('overlay'); o.style.display = o.style.display === 'block' ? 'none' : 'block'; }
 function changeView(v) { if(v === 'groups') renderGroups(); if(v === 'goals') renderGoals(); showView(v); toggleSidebar(); }
 function showView(id) { document.querySelectorAll('body > div:not(.header-controls):not(.sidebar):not(.overlay)').forEach(v => v.classList.add('hidden')); document.getElementById('view-'+id).classList.remove('hidden'); }
-function resetData() { if(confirm("¿Borrar todo?")) { localStorage.removeItem('gymSlimV21'); location.reload(); } }
+function resetData() { if(confirm("¿Borrar todo?")) { localStorage.removeItem('gymSlimV22'); location.reload(); } }
 
 function updateRadar() {
     const ctx = document.getElementById('radarMusculos');
