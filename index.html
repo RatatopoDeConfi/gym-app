@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Real-Time Memory</title>
+    <title>Symmetry Neon History</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
@@ -22,14 +22,14 @@
         input { width: 55px; background: transparent; border: none; border-bottom: 1px solid var(--gray); color: var(--neon); text-align: center; font-size: 1rem; outline: none; }
         .btn-main { width: 100%; background: var(--neon); border: none; color: #000; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 15px; }
         .hidden { display: none; }
-        .back-btn { color: var(--neon); cursor: pointer; margin-bottom: 20px; display: inline-block; }
+        .back-btn { color: var(--neon); cursor: pointer; margin-bottom: 20px; display: inline-block; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
     <div class="header-controls">
         <div class="menu-icon" onclick="toggleSidebar()">☰</div>
-        <div style="margin-left: 20px; font-weight: 800; letter-spacing: 2px;">SYMMETRY NEON</div>
+        <div style="margin-left: 20px; font-weight: 800; letter-spacing: 2px; font-size: 0.9rem;">SYMMETRY NEON</div>
     </div>
 
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
@@ -52,20 +52,20 @@
     </div>
 
     <div id="view-weeks" class="hidden">
-        <span class="back-btn" onclick="showView('groups')">← VOLVER</span>
+        <span class="back-btn" onclick="showView('groups')">← VOLVER A BLOQUES</span>
         <div id="semanas-container"></div>
     </div>
 
     <div id="view-days" class="hidden">
-        <span class="back-btn" onclick="showView('weeks')">← VOLVER</span>
+        <span class="back-btn" onclick="showView('weeks')">← VOLVER A SEMANAS</span>
         <div id="dias-container"></div>
     </div>
 
     <div id="view-exercises" class="hidden">
-        <span class="back-btn" onclick="showView('days')">← VOLVER</span>
+        <span class="back-btn" onclick="showView('days')">← VOLVER A DÍAS</span>
         <h2 id="day-title-header"></h2>
         <div id="ejercicios-container"></div>
-        <button class="btn-main" onclick="finalizarYPropagar()">✓ GUARDAR Y ACTUALIZAR FUTUROS</button>
+        <button class="btn-main" onclick="finalizarYPropagarHistorico()">✓ GUARDAR Y ACTUALIZAR FUTURO</button>
     </div>
 
 <script>
@@ -77,61 +77,61 @@ const rutinaMaestraInicial = [
     { n: 'Pull 2', e: [{ name: 'Dominadas', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Remo Unilateral', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Elevaciones Posteriores', m: 'Hombro', p: 0, r: 0, s: 3 }, { name: 'Press Cerrado', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Press Frances', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Dragon Flags', m: 'Core', p: 0, r: 0, s: 3 }]}
 ];
 
-let db = JSON.parse(localStorage.getItem('gymNeonV6')) || { semanas: [], rutinaMaestra: rutinaMaestraInicial };
+let db = JSON.parse(localStorage.getItem('gymNeonV7')) || { semanas: [], rutinaMaestra: rutinaMaestraInicial };
 let activeW = null, activeD = null;
 
-function save() { localStorage.setItem('gymNeonV6', JSON.stringify(db)); updateRadar(); }
+function save() { localStorage.setItem('gymNeonV7', JSON.stringify(db)); updateRadar(); }
 
 function nuevaSemana() {
     db.semanas.push({ id: db.semanas.length + 1, dias: JSON.parse(JSON.stringify(db.rutinaMaestra)) });
     save(); renderGroups();
 }
 
-function finalizarYPropagar() {
+function finalizarYPropagarHistorico() {
     const diaEditado = db.semanas[activeW].dias[activeD];
-    const nombreDia = diaEditado.n; // Ej: "Push 1"
+    const categoriaDia = diaEditado.n.split(' ')[0]; // "Push", "Pull" o "Legs"
 
-    // 1. Actualizar la Plantilla Maestra para futuras semanas
+    // 1. Actualizar la Plantilla Maestra (para que nuevas semanas nazcan con esto)
     db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaEditado));
 
-    // 2. BUSCAR DÍAS IGUALES EN EL FUTURO Y ACTUALIZARLOS
-    // Recorremos todas las semanas desde la actual hasta el final
+    // 2. PROPAGAR SOLO AL FUTURO
+    // Iteramos semanas desde la actual
     for (let i = activeW; i < db.semanas.length; i++) {
-        db.semanas[i].dias.forEach(d => {
-            // Si el nombre del día coincide (ej: es otro día de "Push 1")
-            // O si quieres que "Push 1" actualice también a "Push 2", usamos startWith("Push")
-            if (d.n.split(' ')[0] === nombreDia.split(' ')[0]) {
-                d.e.forEach((ejFuturo, idx) => {
-                    const ejActual = diaEditado.e[idx];
-                    // Solo actualizamos si el ejercicio se llama igual
-                    if(ejFuturo.name === ejActual.name) {
-                        ejFuturo.p = ejActual.p;
-                        ejFuturo.r = ejActual.r;
-                        ejFuturo.s = ejActual.s;
-                    }
-                });
+        db.semanas[i].dias.forEach((d, dIdx) => {
+            // Regla: 
+            // - Si es la misma semana: solo actualiza si el día está DESPUÉS del actual (dIdx > activeD)
+            // - Si es una semana posterior: actualiza todos los días de la misma categoría
+            if (i > activeW || (i === activeW && dIdx > activeD)) {
+                if (d.n.startsWith(categoriaDia)) {
+                    d.e.forEach((ejFuturo, eIdx) => {
+                        const ejActual = diaEditado.e.find(ex => ex.name === ejFuturo.name);
+                        if (ejActual) {
+                            ejFuturo.p = ejActual.p;
+                            ejFuturo.r = ejActual.r;
+                            ejFuturo.s = ejActual.s;
+                        }
+                    });
+                }
             }
         });
     }
     
     save();
-    alert(`¡Datos de ${nombreDia} guardados y aplicados a todos los días de empuje/tirón futuros!`);
+    alert(`Entreno de ${diaEditado.n} guardado. Tus marcas anteriores no han sido alteradas.`);
     showView('days');
 }
 
+// FUNCIONES DE INTERFAZ (Sin cambios)
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
     const over = document.getElementById('overlay');
     over.style.display = over.style.display === 'block' ? 'none' : 'block';
 }
-
 function changeView(v) { showView(v); if(v === 'groups') renderGroups(); toggleSidebar(); }
-
 function showView(id) {
     document.querySelectorAll('body > div:not(.header-controls):not(.sidebar):not(.overlay)').forEach(d => d.classList.add('hidden'));
     document.getElementById('view-' + id).classList.remove('hidden');
 }
-
 function renderGroups() {
     const cont = document.getElementById('groups-container');
     const nG = Math.ceil(db.semanas.length / 12);
@@ -140,7 +140,6 @@ function renderGroups() {
         cont.innerHTML += `<div class="card" onclick="renderWInG(${i})"><span style="color:var(--neon); font-size:0.7rem; border:1px solid var(--neon); padding:2px 4px;">BLOQUE ${i+1}</span><br><br>Sem. ${i*12+1} - ${Math.min((i+1)*12, db.semanas.length)}</div>`;
     }
 }
-
 function renderWInG(gi) {
     const start = gi*12, end = Math.min(start+12, db.semanas.length);
     let h = "";
@@ -148,13 +147,11 @@ function renderWInG(gi) {
     document.getElementById('semanas-container').innerHTML = h;
     showView('weeks');
 }
-
 function openW(i) {
     activeW = i;
     document.getElementById('dias-container').innerHTML = db.semanas[i].dias.map((d, di) => `<div class="card" onclick="openD(${di})">${d.n}</div>`).join('');
     showView('days');
 }
-
 function openD(di) {
     activeD = di;
     const dia = db.semanas[activeW].dias[di];
@@ -171,7 +168,6 @@ function openD(di) {
     `).join('');
     showView('exercises');
 }
-
 function upd(ei, f, v) { db.semanas[activeW].dias[activeD].e[ei][f] = parseFloat(v); }
 
 let chart;
@@ -192,7 +188,6 @@ function updateRadar() {
         options: { scales: { r: { grid: { color: '#222' }, angleLines: { color: '#222' }, pointLabels: { color: '#888' }, ticks: { display: false }, suggestMax: 100 } }, plugins: { legend: { display: false } } }
     });
 }
-
 updateRadar();
 renderGroups();
 </script>
