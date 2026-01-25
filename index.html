@@ -3,55 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry App Personal</title>
+    <title>Symmetry Neon</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0f0f0f; --card: #1a1a1a; --accent: #00e5ff; --text: #eee; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; padding-bottom: 80px; }
-        .card { background: var(--card); border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 12px; }
-        .ejercicio-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9em; }
-        input { width: 45px; background: #222; border: 1px solid #444; color: #00e5ff; padding: 5px; border-radius: 4px; text-align: center; }
+        :root { 
+            --bg: #050505; 
+            --card: #0f0f0f; 
+            --neon: #39ff14; 
+            --neon-dim: rgba(57, 255, 20, 0.2);
+            --text: #ffffff; 
+            --gray: #666;
+        }
+        body { 
+            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); 
+            margin: 0; padding: 20px; padding-bottom: 100px;
+        }
+        h2 { text-transform: uppercase; letter-spacing: 2px; color: var(--neon); text-shadow: 0 0 10px var(--neon-dim); font-size: 1.2rem; }
+        
+        .card { 
+            background: var(--card); border: 1px solid #222; padding: 18px; border-radius: 8px; 
+            margin-bottom: 15px; transition: 0.3s; position: relative; overflow: hidden;
+        }
+        .card:active { border-color: var(--neon); box-shadow: 0 0 15px var(--neon-dim); }
+
+        .group-badge { color: var(--neon); font-size: 0.7rem; border: 1px solid var(--neon); padding: 2px 6px; border-radius: 4px; margin-bottom: 10px; display: inline-block; }
+
+        input { 
+            width: 50px; background: transparent; border: none; border-bottom: 1px solid var(--gray); 
+            color: var(--neon); text-align: center; font-size: 1rem; outline: none;
+        }
+        input:focus { border-bottom-color: var(--neon); }
+
+        .ejercicio-row { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        .label-min { font-size: 0.7rem; color: var(--gray); display: block; }
+
+        .btn-main { 
+            width: 100%; background: transparent; border: 1px solid var(--neon); color: var(--neon); 
+            padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase;
+            box-shadow: inset 0 0 5px var(--neon-dim);
+        }
+
         .hidden { display: none; }
-        .btn-back { background: none; border: 1px solid var(--accent); color: var(--accent); padding: 5px 10px; border-radius: 5px; margin-bottom: 15px; }
-        nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
-        .nav-item { cursor: pointer; font-size: 0.8em; opacity: 0.6; }
-        .nav-item.active { opacity: 1; color: var(--accent); }
-        h2 { border-left: 4px solid var(--accent); padding-left: 10px; }
+        nav { 
+            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(5,5,5,0.9); 
+            backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 20px 0; border-top: 1px solid #222; 
+        }
+        .nav-item { cursor: pointer; font-size: 0.7rem; color: var(--gray); text-transform: uppercase; font-weight: bold; }
+        .nav-item.active { color: var(--neon); text-shadow: 0 0 8px var(--neon); }
     </style>
 </head>
 <body>
 
 <div id="view-charts">
-    <h2>Mi Simetría</h2>
+    <h2>Estatus de Simetría</h2>
     <canvas id="radarMusculos"></canvas>
 </div>
 
+<div id="view-groups" class="hidden">
+    <h2>Mis Bloques (12 Sem)</h2>
+    <div id="groups-container"></div>
+    <button class="btn-main" onclick="crearNuevaSemana()">+ Registrar Sesión</button>
+</div>
+
 <div id="view-weeks" class="hidden">
-    <h2>Semanas de Entreno</h2>
+    <button style="background:none; border:none; color:var(--neon); margin-bottom:20px;" onclick="showView('groups')">← VOLVER A BLOQUES</button>
+    <h2 id="group-title">Semanas del Bloque</h2>
     <div id="semanas-container"></div>
-    <button onclick="crearNuevaSemana()" style="width:100%; padding:15px; background:var(--accent); border-radius:10px; border:none; font-weight:bold;">+ EMPEZAR NUEVA SEMANA</button>
 </div>
 
 <div id="view-days" class="hidden">
-    <button class="btn-back" onclick="showView('weeks')">← Volver a Semanas</button>
-    <h2 id="current-week-title">Semana X</h2>
+    <button style="background:none; border:none; color:var(--neon); margin-bottom:20px;" onclick="showView('weeks')">← VOLVER A SEMANAS</button>
+    <h2 id="current-week-title">Semana</h2>
     <div id="dias-container"></div>
 </div>
 
 <div id="view-exercises" class="hidden">
-    <button class="btn-back" onclick="showView('days')">← Volver a Días</button>
-    <h2 id="current-day-title">Día X</h2>
+    <button style="background:none; border:none; color:var(--neon); margin-bottom:20px;" onclick="showView('days')">← VOLVER A DÍAS</button>
+    <h2 id="current-day-title">Ejercicios</h2>
     <div id="ejercicios-container"></div>
 </div>
 
 <nav>
-    <div class="nav-item active" onclick="showView('charts', this)">📊 Radar</div>
-    <div class="nav-item" onclick="showView('weeks', this)">💪 Rutina</div>
+    <div class="nav-item active" onclick="showView('charts', this)">Radar</div>
+    <div class="nav-item" onclick="showView('groups', this); renderGroups();">Entreno</div>
 </nav>
 
 <script>
-// --- LÓGICA DE DATOS ---
-let db = JSON.parse(localStorage.getItem('gymData')) || { semanas: [] };
+let db = JSON.parse(localStorage.getItem('gymDataNeon')) || { semanas: [] };
 let activeWeekIdx = null;
 let activeDayIdx = null;
 
@@ -82,6 +120,8 @@ const plantillaDias = [
     ]}
 ];
 
+function save() { localStorage.setItem('gymDataNeon', JSON.stringify(db)); updateRadar(); }
+
 function crearNuevaSemana() {
     const ultima = db.semanas[db.semanas.length - 1];
     const nueva = {
@@ -90,33 +130,40 @@ function crearNuevaSemana() {
     };
     db.semanas.push(nueva);
     save();
-    renderWeeks();
+    renderGroups();
 }
 
-function save() { localStorage.setItem('gymData', JSON.stringify(db)); updateRadar(); }
-
-// --- NAVEGACIÓN ---
-function showView(viewId, navEl) {
-    document.querySelectorAll('body > div').forEach(div => div.classList.add('hidden'));
-    document.getElementById('view-' + viewId).classList.remove('hidden');
-    if(navEl) {
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        navEl.classList.add('active');
+function renderGroups() {
+    const container = document.getElementById('groups-container');
+    const numGrupos = Math.ceil(db.semanas.length / 12);
+    let html = "";
+    
+    for(let i = 0; i < numGrupos; i++) {
+        html += `<div class="card" onclick="renderWeeksInGroup(${i})">
+            <span class="group-badge">BLOQUE ${i + 1}</span><br>
+            Semanas ${i * 12 + 1} a ${Math.min((i + 1) * 12, db.semanas.length)}
+        </div>`;
     }
+    container.innerHTML = html || "<p style='color:#444'>No hay entrenos registrados.</p>";
 }
 
-function renderWeeks() {
+function renderWeeksInGroup(groupIndex) {
     const container = document.getElementById('semanas-container');
-    container.innerHTML = db.semanas.map((s, idx) => `
-        <div class="card" onclick="openWeek(${idx})">Semana ${s.id} <span style="float:right">→</span></div>
-    `).reverse().join('');
+    const inicio = groupIndex * 12;
+    const fin = Math.min(inicio + 12, db.semanas.length);
+    
+    let html = "";
+    for(let i = inicio; i < fin; i++) {
+        html += `<div class="card" onclick="openWeek(${i})">Semana ${db.semanas[i].id}</div>`;
+    }
+    container.innerHTML = html;
+    showView('weeks');
 }
 
 function openWeek(idx) {
     activeWeekIdx = idx;
-    document.getElementById('current-week-title').innerText = `Semana ${db.semanas[idx].id}`;
-    const container = document.getElementById('dias-container');
-    container.innerHTML = db.semanas[idx].dias.map((d, dIdx) => `
+    document.getElementById('current-week-title').innerText = `SEMANA ${db.semanas[idx].id}`;
+    document.getElementById('dias-container').innerHTML = db.semanas[idx].dias.map((d, dIdx) => `
         <div class="card" onclick="openDay(${dIdx})">${d.nombre}</div>
     `).join('');
     showView('days');
@@ -125,14 +172,13 @@ function openWeek(idx) {
 function openDay(dIdx) {
     activeDayIdx = dIdx;
     document.getElementById('current-day-title').innerText = db.semanas[activeWeekIdx].dias[dIdx].nombre;
-    const container = document.getElementById('ejercicios-container');
-    container.innerHTML = db.semanas[activeWeekIdx].dias[dIdx].ejercicios.map((ej, eIdx) => `
+    document.getElementById('ejercicios-container').innerHTML = db.semanas[activeWeekIdx].dias[dIdx].ejercicios.map((ej, eIdx) => `
         <div class="card">
-            <strong>${ej.nombre}</strong><br><br>
+            <strong style="color:var(--neon)">${ej.nombre}</strong>
             <div class="ejercicio-row">
-                Sets: <input type="number" value="${ej.sets}" onchange="updateEj(${eIdx}, 'sets', this.value)">
-                Kg: <input type="number" value="${ej.peso}" onchange="updateEj(${eIdx}, 'peso', this.value)">
-                Reps: <input type="number" value="${ej.reps}" onchange="updateEj(${eIdx}, 'reps', this.value)">
+                <div><span class="label-min">SETS</span><input type="number" value="${ej.sets}" onchange="updateEj(${eIdx}, 'sets', this.value)"></div>
+                <div><span class="label-min">PESO</span><input type="number" value="${ej.peso}" onchange="updateEj(${eIdx}, 'peso', this.value)"></div>
+                <div><span class="label-min">REPS</span><input type="number" value="${ej.reps}" onchange="updateEj(${eIdx}, 'reps', this.value)"></div>
             </div>
         </div>
     `).join('');
@@ -144,22 +190,28 @@ function updateEj(eIdx, field, value) {
     save();
 }
 
-// --- RADAR ---
+function showView(viewId, navEl) {
+    document.querySelectorAll('body > div').forEach(div => div.classList.add('hidden'));
+    document.getElementById('view-' + viewId).classList.remove('hidden');
+    if(navEl) {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        navEl.classList.add('active');
+    }
+}
+
 let radarChart;
 function updateRadar() {
     const ctx = document.getElementById('radarMusculos');
     const labels = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
-    
-    // Aquí calculamos el nivel basado en el último entreno
     const dataNiveles = labels.map(m => {
-        let maxSession = 0;
+        let maxScore = 0;
         db.semanas.forEach(s => s.dias.forEach(d => d.ejercicios.forEach(e => {
             if(e.musculo === m) {
-                let score = (e.peso * e.reps) / 100; // Algoritmo simple de fuerza relativa
-                if(score > maxSession) maxSession = score;
+                let score = (e.peso * e.reps) / 100;
+                if(score > maxScore) maxScore = score;
             }
         })));
-        return Math.min(maxSession, 100); 
+        return Math.min(maxScore, 100); 
     });
 
     if(radarChart) radarChart.destroy();
@@ -167,15 +219,32 @@ function updateRadar() {
         type: 'radar',
         data: {
             labels: labels,
-            datasets: [{ label: 'Nivel Músculo', data: dataNiveles, backgroundColor: 'rgba(0, 229, 255, 0.2)', borderColor: '#00e5ff' }]
+            datasets: [{ 
+                label: 'Nivel', 
+                data: dataNiveles, 
+                backgroundColor: 'rgba(57, 255, 20, 0.1)', 
+                borderColor: '#39ff14',
+                borderWidth: 1,
+                pointBackgroundColor: '#39ff14'
+            }]
         },
-        options: { scales: { r: { grid: { color: '#333' }, ticks: { display: false }, suggestMin: 0, suggestMax: 100 } } }
+        options: { 
+            scales: { 
+                r: { 
+                    grid: { color: '#222' }, 
+                    angleLines: { color: '#222' },
+                    ticks: { display: false }, 
+                    pointLabels: { color: '#888', font: { size: 10 } },
+                    suggestMin: 0, suggestMax: 100 
+                } 
+            },
+            plugins: { legend: { display: false } }
+        }
     });
 }
 
-// Inicio
-renderWeeks();
 updateRadar();
+renderGroups();
 </script>
 </body>
 </html>
