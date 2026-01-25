@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Neon Fixed</title>
+    <title>Symmetry Real-Time Memory</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
@@ -65,98 +65,67 @@
         <span class="back-btn" onclick="showView('days')">← VOLVER</span>
         <h2 id="day-title-header"></h2>
         <div id="ejercicios-container"></div>
-        <button class="btn-main" onclick="finalizarYActualizarMaestra()">✓ GUARDAR Y ACTUALIZAR MARCAS</button>
+        <button class="btn-main" onclick="finalizarYPropagar()">✓ GUARDAR Y ACTUALIZAR FUTUROS</button>
     </div>
 
 <script>
-// RUTINA INICIAL POR DEFECTO
 const rutinaMaestraInicial = [
-    { n: 'Push 1', e: [
-        { name: 'Press Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 },
-        { name: 'Aperturas Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 },
-        { name: 'Curl Biceps Inclinado', m: 'Biceps', p: 0, r: 0, s: 3 },
-        { name: 'Curl Martillo', m: 'Biceps', p: 0, r: 0, s: 3 },
-        { name: 'Elevaciones Laterales', m: 'Hombro', p: 0, r: 0, s: 3 },
-        { name: 'Press Militar', m: 'Hombro', p: 0, r: 0, s: 3 }
-    ]},
-    { n: 'Pull 1', e: [
-        { name: 'Dominadas', m: 'Espalda', p: 0, r: 0, s: 3 },
-        { name: 'Remo Unilateral', m: 'Espalda', p: 0, r: 0, s: 3 },
-        { name: 'Elevaciones Posteriores', m: 'Hombro', p: 0, r: 0, s: 3 },
-        { name: 'Press Cerrado', m: 'Triceps', p: 0, r: 0, s: 3 },
-        { name: 'Press Frances', m: 'Triceps', p: 0, r: 0, s: 3 },
-        { name: 'Dragon Flags', m: 'Core', p: 0, r: 0, s: 3 }
-    ]},
-    { n: 'Legs', e: [
-        { name: 'Sentadilla Bulgara', m: 'Pierna', p: 0, r: 0, s: 3 },
-        { name: 'Sentadilla', m: 'Pierna', p: 0, r: 0, s: 3 },
-        { name: 'Peso Muerto Manc.', m: 'Pierna', p: 0, r: 0, s: 3 },
-        { name: 'Curl Femoral', m: 'Pierna', p: 0, r: 0, s: 3 },
-        { name: 'Gemelos Pie', m: 'Pierna', p: 0, r: 0, s: 3 },
-        { name: 'Gemelos Sentado', m: 'Pierna', p: 0, r: 0, s: 3 }
-    ]},
-    { n: 'Push 2', e: [
-        { name: 'Press Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 },
-        { name: 'Aperturas Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 },
-        { name: 'Curl Biceps Inclinado', m: 'Biceps', p: 0, r: 0, s: 3 },
-        { name: 'Curl Martillo', m: 'Biceps', p: 0, r: 0, s: 3 },
-        { name: 'Elevaciones Laterales', m: 'Hombro', p: 0, r: 0, s: 3 },
-        { name: 'Press Militar', m: 'Hombro', p: 0, r: 0, s: 3 }
-    ]},
-    { n: 'Pull 2', e: [
-        { name: 'Dominadas', m: 'Espalda', p: 0, r: 0, s: 3 },
-        { name: 'Remo Unilateral', m: 'Espalda', p: 0, r: 0, s: 3 },
-        { name: 'Elevaciones Posteriores', m: 'Hombro', p: 0, r: 0, s: 3 },
-        { name: 'Press Cerrado', m: 'Triceps', p: 0, r: 0, s: 3 },
-        { name: 'Press Frances', m: 'Triceps', p: 0, r: 0, s: 3 },
-        { name: 'Dragon Flags', m: 'Core', p: 0, r: 0, s: 3 }
-    ]}
+    { n: 'Push 1', e: [{ name: 'Press Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 }, { name: 'Aperturas Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 }, { name: 'Curl Biceps Inclinado', m: 'Biceps', p: 0, r: 0, s: 3 }, { name: 'Curl Martillo', m: 'Biceps', p: 0, r: 0, s: 3 }, { name: 'Elevaciones Laterales', m: 'Hombro', p: 0, r: 0, s: 3 }, { name: 'Press Militar', m: 'Hombro', p: 0, r: 0, s: 3 }]},
+    { n: 'Pull 1', e: [{ name: 'Dominadas', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Remo Unilateral', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Elevaciones Posteriores', m: 'Hombro', p: 0, r: 0, s: 3 }, { name: 'Press Cerrado', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Press Frances', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Dragon Flags', m: 'Core', p: 0, r: 0, s: 3 }]},
+    { n: 'Legs', e: [{ name: 'Sentadilla Bulgara', m: 'Pierna', p: 0, r: 0, s: 3 }, { name: 'Sentadilla', m: 'Pierna', p: 0, r: 0, s: 3 }, { name: 'Peso Muerto Manc.', m: 'Pierna', p: 0, r: 0, s: 3 }, { name: 'Curl Femoral', m: 'Pierna', p: 0, r: 0, s: 3 }, { name: 'Gemelos Pie', m: 'Pierna', p: 0, r: 0, s: 3 }, { name: 'Gemelos Sentado', m: 'Pierna', p: 0, r: 0, s: 3 }]},
+    { n: 'Push 2', e: [{ name: 'Press Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 }, { name: 'Aperturas Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 }, { name: 'Curl Biceps Inclinado', m: 'Biceps', p: 0, r: 0, s: 3 }, { name: 'Curl Martillo', m: 'Biceps', p: 0, r: 0, s: 3 }, { name: 'Elevaciones Laterales', m: 'Hombro', p: 0, r: 0, s: 3 }, { name: 'Press Militar', m: 'Hombro', p: 0, r: 0, s: 3 }]},
+    { n: 'Pull 2', e: [{ name: 'Dominadas', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Remo Unilateral', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Elevaciones Posteriores', m: 'Hombro', p: 0, r: 0, s: 3 }, { name: 'Press Cerrado', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Press Frances', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Dragon Flags', m: 'Core', p: 0, r: 0, s: 3 }]}
 ];
 
-// CARGAR DATOS
-let db = JSON.parse(localStorage.getItem('gymNeonV5')) || { 
-    semanas: [], 
-    rutinaMaestra: rutinaMaestraInicial 
-};
+let db = JSON.parse(localStorage.getItem('gymNeonV6')) || { semanas: [], rutinaMaestra: rutinaMaestraInicial };
 let activeW = null, activeD = null;
 
-function save() { 
-    localStorage.setItem('gymNeonV5', JSON.stringify(db)); 
-    updateRadar(); 
-}
+function save() { localStorage.setItem('gymNeonV6', JSON.stringify(db)); updateRadar(); }
 
 function nuevaSemana() {
-    // IMPORTANTE: Aquí clonamos la "rutinaMaestra" que siempre tiene los últimos valores guardados
-    db.semanas.push({
-        id: db.semanas.length + 1,
-        dias: JSON.parse(JSON.stringify(db.rutinaMaestra))
-    });
-    save(); 
-    renderGroups();
+    db.semanas.push({ id: db.semanas.length + 1, dias: JSON.parse(JSON.stringify(db.rutinaMaestra)) });
+    save(); renderGroups();
 }
 
-function finalizarYActualizarMaestra() {
-    // Al guardar, actualizamos la rutinaMaestra con los valores de este día actual
-    const diaActualizado = db.semanas[activeW].dias[activeD];
-    db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaActualizado));
+function finalizarYPropagar() {
+    const diaEditado = db.semanas[activeW].dias[activeD];
+    const nombreDia = diaEditado.n; // Ej: "Push 1"
+
+    // 1. Actualizar la Plantilla Maestra para futuras semanas
+    db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaEditado));
+
+    // 2. BUSCAR DÍAS IGUALES EN EL FUTURO Y ACTUALIZARLOS
+    // Recorremos todas las semanas desde la actual hasta el final
+    for (let i = activeW; i < db.semanas.length; i++) {
+        db.semanas[i].dias.forEach(d => {
+            // Si el nombre del día coincide (ej: es otro día de "Push 1")
+            // O si quieres que "Push 1" actualice también a "Push 2", usamos startWith("Push")
+            if (d.n.split(' ')[0] === nombreDia.split(' ')[0]) {
+                d.e.forEach((ejFuturo, idx) => {
+                    const ejActual = diaEditado.e[idx];
+                    // Solo actualizamos si el ejercicio se llama igual
+                    if(ejFuturo.name === ejActual.name) {
+                        ejFuturo.p = ejActual.p;
+                        ejFuturo.r = ejActual.r;
+                        ejFuturo.s = ejActual.s;
+                    }
+                });
+            }
+        });
+    }
     
     save();
-    alert("¡Marcas actualizadas! Se usarán en la próxima semana que crees.");
+    alert(`¡Datos de ${nombreDia} guardados y aplicados a todos los días de empuje/tirón futuros!`);
     showView('days');
 }
 
-// NAVEGACIÓN Y RENDER (Mismo estilo anterior)
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
     const over = document.getElementById('overlay');
     over.style.display = over.style.display === 'block' ? 'none' : 'block';
 }
 
-function changeView(v) {
-    showView(v);
-    if(v === 'groups') renderGroups();
-    toggleSidebar();
-}
+function changeView(v) { showView(v); if(v === 'groups') renderGroups(); toggleSidebar(); }
 
 function showView(id) {
     document.querySelectorAll('body > div:not(.header-controls):not(.sidebar):not(.overlay)').forEach(d => d.classList.add('hidden'));
@@ -203,9 +172,7 @@ function openD(di) {
     showView('exercises');
 }
 
-function upd(ei, f, v) { 
-    db.semanas[activeW].dias[activeD].e[ei][f] = parseFloat(v); 
-}
+function upd(ei, f, v) { db.semanas[activeW].dias[activeD].e[ei][f] = parseFloat(v); }
 
 let chart;
 function updateRadar() {
