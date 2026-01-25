@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Neon Unified</title>
+    <title>Symmetry Neon Series</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
@@ -17,12 +17,19 @@
         .sidebar.open { left: 0; }
         .sidebar-item { padding: 15px 0; font-weight: bold; color: var(--text); text-transform: uppercase; cursor: pointer; border-bottom: 1px solid #1a1a1a; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 150; display: none; }
-        .card { background: var(--card); border: 1px solid #222; padding: 18px; border-radius: 8px; margin-bottom: 15px; }
-        .ejercicio-row { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
-        input { width: 55px; background: transparent; border: none; border-bottom: 1px solid var(--gray); color: var(--neon); text-align: center; font-size: 1rem; outline: none; }
-        .btn-main { width: 100%; background: var(--neon); border: none; color: #000; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 15px; }
+        
+        .card { background: var(--card); border: 1px solid #222; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .ejercicio-header { color: var(--neon); font-weight: bold; margin-bottom: 10px; display: block; border-bottom: 1px solid #222; padding-bottom: 5px; }
+        
+        .serie-row { display: grid; grid-template-columns: 0.5fr 1fr 1fr; gap: 10px; align-items: center; margin-bottom: 8px; padding: 5px 0; }
+        .serie-label { font-size: 0.7rem; color: var(--gray); font-weight: bold; }
+        
+        input { background: transparent; border: none; border-bottom: 1px solid #333; color: var(--text); text-align: center; font-size: 0.9rem; padding: 4px; outline: none; width: 100%; }
+        input:focus { border-bottom-color: var(--neon); color: var(--neon); }
+
+        .btn-main { width: 100%; background: var(--neon); border: none; color: #000; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 15px; box-shadow: 0 0 10px var(--neon-dim); }
         .hidden { display: none; }
-        .back-btn { color: var(--neon); cursor: pointer; margin-bottom: 20px; display: inline-block; font-size: 0.9rem; }
+        .back-btn { color: var(--neon); cursor: pointer; margin-bottom: 20px; display: inline-block; font-size: 0.8rem; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -52,76 +59,138 @@
     </div>
 
     <div id="view-weeks" class="hidden">
-        <span class="back-btn" onclick="showView('groups')">← VOLVER</span>
+        <span class="back-btn" onclick="showView('groups')">← BLOQUES</span>
         <div id="semanas-container"></div>
     </div>
 
     <div id="view-days" class="hidden">
-        <span class="back-btn" onclick="showView('weeks')">← VOLVER</span>
+        <span class="back-btn" onclick="showView('weeks')">← SEMANAS</span>
         <div id="dias-container"></div>
     </div>
 
     <div id="view-exercises" class="hidden">
-        <span class="back-btn" onclick="showView('days')">← VOLVER</span>
-        <h2 id="day-title-header"></h2>
+        <span class="back-btn" onclick="showView('days')">← DÍAS</span>
+        <h2 id="day-title-header" style="font-size: 1rem;"></h2>
         <div id="ejercicios-container"></div>
-        <button class="btn-main" onclick="finalizarYPropagarTotal()">✓ GUARDAR Y ACTUALIZAR SIGUIENTES</button>
+        <button class="btn-main" onclick="finalizarYPropagarSeries()">✓ GUARDAR TODAS LAS SERIES</button>
     </div>
 
 <script>
-const rutinaMaestraInicial = [
-    { n: 'Push 1', e: [{ name: 'Press Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 }, { name: 'Aperturas Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 }, { name: 'Curl Biceps Inclinado', m: 'Biceps', p: 0, r: 0, s: 3 }, { name: 'Curl Martillo', m: 'Biceps', p: 0, r: 0, s: 3 }, { name: 'Elevaciones Laterales', m: 'Hombro', p: 0, r: 0, s: 3 }, { name: 'Press Militar', m: 'Hombro', p: 0, r: 0, s: 3 }]},
-    { n: 'Pull 1', e: [{ name: 'Dominadas', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Remo Unilateral', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Elevaciones Posteriores', m: 'Hombro', p: 0, r: 0, s: 3 }, { name: 'Press Cerrado', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Press Frances', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Dragon Flags', m: 'Core', p: 0, r: 0, s: 3 }]},
-    { n: 'Legs', e: [{ name: 'Sentadilla Bulgara', m: 'Pierna', p: 0, r: 0, s: 3 }, { name: 'Sentadilla', m: 'Pierna', p: 0, r: 0, s: 3 }, { name: 'Peso Muerto Manc.', m: 'Pierna', p: 0, r: 0, s: 3 }, { name: 'Curl Femoral', m: 'Pierna', p: 0, r: 0, s: 3 }, { name: 'Gemelos Pie', m: 'Pierna', p: 0, r: 0, s: 3 }, { name: 'Gemelos Sentado', m: 'Pierna', p: 0, r: 0, s: 3 }]},
-    { n: 'Push 2', e: [{ name: 'Press Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 }, { name: 'Aperturas Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 }, { name: 'Curl Biceps Inclinado', m: 'Biceps', p: 0, r: 0, s: 3 }, { name: 'Curl Martillo', m: 'Biceps', p: 0, r: 0, s: 3 }, { name: 'Elevaciones Laterales', m: 'Hombro', p: 0, r: 0, s: 3 }, { name: 'Press Militar', m: 'Hombro', p: 0, r: 0, s: 3 }]},
-    { n: 'Pull 2', e: [{ name: 'Dominadas', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Remo Unilateral', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Elevaciones Posteriores', m: 'Hombro', p: 0, r: 0, s: 3 }, { name: 'Press Cerrado', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Press Frances', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Dragon Flags', m: 'Core', p: 0, r: 0, s: 3 }]}
+// Plantilla con soporte para 3 series por ejercicio
+const generarSeriesIniciales = () => [
+    { p: 0, r: 0 }, { p: 0, r: 0 }, { p: 0, r: 0 }
 ];
 
-let db = JSON.parse(localStorage.getItem('gymNeonV8')) || { semanas: [], rutinaMaestra: rutinaMaestraInicial };
+const rutinaMaestraInicial = [
+    { n: 'Push 1', e: [
+        { name: 'Press Inclinado', m: 'Pecho', series: generarSeriesIniciales() },
+        { name: 'Aperturas Inclinado', m: 'Pecho', series: generarSeriesIniciales() },
+        { name: 'Curl Biceps Inclinado', m: 'Biceps', series: generarSeriesIniciales() },
+        { name: 'Curl Martillo', m: 'Biceps', series: generarSeriesIniciales() },
+        { name: 'Elevaciones Laterales', m: 'Hombro', series: generarSeriesIniciales() },
+        { name: 'Press Militar', m: 'Hombro', series: generarSeriesIniciales() }
+    ]},
+    { n: 'Pull 1', e: [
+        { name: 'Dominadas', m: 'Espalda', series: generarSeriesIniciales() },
+        { name: 'Remo Unilateral', m: 'Espalda', series: generarSeriesIniciales() },
+        { name: 'Elevaciones Posteriores', m: 'Hombro', series: generarSeriesIniciales() },
+        { name: 'Press Cerrado', m: 'Triceps', series: generarSeriesIniciales() },
+        { name: 'Press Frances', m: 'Triceps', series: generarSeriesIniciales() },
+        { name: 'Dragon Flags', m: 'Core', series: generarSeriesIniciales() }
+    ]},
+    { n: 'Legs', e: [
+        { name: 'Sentadilla Bulgara', m: 'Pierna', series: generarSeriesIniciales() },
+        { name: 'Sentadilla', m: 'Pierna', series: generarSeriesIniciales() },
+        { name: 'Peso Muerto Manc.', m: 'Pierna', series: generarSeriesIniciales() },
+        { name: 'Curl Femoral', m: 'Pierna', series: generarSeriesIniciales() },
+        { name: 'Gemelos Pie', m: 'Pierna', series: generarSeriesIniciales() },
+        { name: 'Gemelos Sentado', m: 'Pierna', series: generarSeriesIniciales() }
+    ]},
+    { n: 'Push 2', e: [
+        { name: 'Press Inclinado', m: 'Pecho', series: generarSeriesIniciales() },
+        { name: 'Aperturas Inclinado', m: 'Pecho', series: generarSeriesIniciales() },
+        { name: 'Curl Biceps Inclinado', m: 'Biceps', series: generarSeriesIniciales() },
+        { name: 'Curl Martillo', m: 'Biceps', series: generarSeriesIniciales() },
+        { name: 'Elevaciones Laterales', m: 'Hombro', series: generarSeriesIniciales() },
+        { name: 'Press Militar', m: 'Hombro', series: generarSeriesIniciales() }
+    ]},
+    { n: 'Pull 2', e: [
+        { name: 'Dominadas', m: 'Espalda', series: generarSeriesIniciales() },
+        { name: 'Remo Unilateral', m: 'Espalda', series: generarSeriesIniciales() },
+        { name: 'Elevaciones Posteriores', m: 'Hombro', series: generarSeriesIniciales() },
+        { name: 'Press Cerrado', m: 'Triceps', series: generarSeriesIniciales() },
+        { name: 'Press Frances', m: 'Triceps', series: generarSeriesIniciales() },
+        { name: 'Dragon Flags', m: 'Core', series: generarSeriesIniciales() }
+    ]}
+];
+
+let db = JSON.parse(localStorage.getItem('gymNeonV9')) || { semanas: [], rutinaMaestra: rutinaMaestraInicial };
 let activeW = null, activeD = null;
 
-function save() { localStorage.setItem('gymNeonV8', JSON.stringify(db)); updateRadar(); }
+function save() { localStorage.setItem('gymNeonV9', JSON.stringify(db)); updateRadar(); }
 
 function nuevaSemana() {
     db.semanas.push({ id: db.semanas.length + 1, dias: JSON.parse(JSON.stringify(db.rutinaMaestra)) });
     save(); renderGroups();
 }
 
-function finalizarYPropagarTotal() {
+function finalizarYPropagarSeries() {
     const diaEditado = db.semanas[activeW].dias[activeD];
-    const tipoDia = diaEditado.n.split(' ')[0]; // Detecta "Push", "Pull" o "Legs"
+    const tipoDia = diaEditado.n.split(' ')[0]; 
 
-    // 1. Actualizar TODOS los días de este tipo en la PLANTILLA MAESTRA
-    db.rutinaMaestra.forEach(dMaestro => {
-        if(dMaestro.n.startsWith(tipoDia)) {
-            dMaestro.e.forEach(ejM => {
-                const ejEditado = diaEditado.e.find(ex => ex.name === ejM.name);
-                if(ejEditado) { ejM.p = ejEditado.p; ejM.r = ejEditado.r; ejM.s = ejEditado.s; }
-            });
-        }
-    });
+    // 1. Actualizar Plantilla Maestra
+    db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaEditado));
 
-    // 2. PROPAGAR A SESIONES FUTURAS (Misma semana o siguientes)
+    // 2. Propagar a futuro (misma categoría de día)
     for (let i = activeW; i < db.semanas.length; i++) {
         db.semanas[i].dias.forEach((dFuturo, dfIdx) => {
-            // Solo si es un paso adelante en el tiempo
             if (i > activeW || (i === activeW && dfIdx > activeD)) {
                 if (dFuturo.n.startsWith(tipoDia)) {
                     dFuturo.e.forEach(ejF => {
                         const ejActual = diaEditado.e.find(ex => ex.name === ejF.name);
-                        if(ejActual) { ejF.p = ejActual.p; ejF.r = ejActual.r; ejF.s = ejActual.s; }
+                        if(ejActual) ejF.series = JSON.parse(JSON.stringify(ejActual.series));
                     });
                 }
             }
         });
     }
-    
     save();
-    alert(`¡Datos de ${tipoDia} sincronizados para todas las próximas sesiones!`);
+    alert("¡Series guardadas y sincronizadas!");
     showView('days');
 }
 
-// RESTO DE FUNCIONES (Navegación y Render)
+function openD(di) {
+    activeD = di;
+    const dia = db.semanas[activeW].dias[di];
+    document.getElementById('day-title-header').innerText = dia.n;
+    
+    let html = dia.e.map((ej, ei) => `
+        <div class="card">
+            <span class="ejercicio-header">${ej.name}</span>
+            <div class="serie-row" style="border-bottom: 1px solid #222; margin-bottom: 5px;">
+                <div class="serie-label">SERIE</div>
+                <div class="serie-label">PESO (kg)</div>
+                <div class="serie-label">REPS</div>
+            </div>
+            ${ej.series.map((s, si) => `
+                <div class="serie-row">
+                    <div style="color:var(--neon); font-size:0.8rem;">#${si+1}</div>
+                    <input type="number" value="${s.p}" onchange="updSerie(${ei}, ${si}, 'p', this.value)">
+                    <input type="number" value="${s.r}" onchange="updSerie(${ei}, ${si}, 'r', this.value)">
+                </div>
+            `).join('')}
+        </div>
+    `).join('');
+    
+    document.getElementById('ejercicios-container').innerHTML = html;
+    showView('exercises');
+}
+
+function updSerie(ei, si, field, val) {
+    db.semanas[activeW].dias[activeD].e[ei].series[si][field] = parseFloat(val) || 0;
+}
+
+// FUNCIONES DE INTERFAZ BÁSICAS
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
     const over = document.getElementById('overlay');
@@ -135,9 +204,9 @@ function showView(id) {
 function renderGroups() {
     const cont = document.getElementById('groups-container');
     const nG = Math.ceil(db.semanas.length / 12);
-    cont.innerHTML = "";
+    cont.innerHTML = nG === 0 ? "<p style='color:#444'>No hay semanas. Crea una.</p>" : "";
     for(let i=0; i<nG; i++) {
-        cont.innerHTML += `<div class="card" onclick="renderWInG(${i})"><span style="color:var(--neon); font-size:0.7rem; border:1px solid var(--neon); padding:2px 4px;">BLOQUE ${i+1}</span><br><br>Sem. ${i*12+1} - ${Math.min((i+1)*12, db.semanas.length)}</div>`;
+        cont.innerHTML += `<div class="card" onclick="renderWInG(${i})"><span style="color:var(--neon); font-size:0.7rem; border:1px solid var(--neon); padding:2px 4px;">BLOQUE ${i+1}</span><br><br>Semanas ${i*12+1} - ${Math.min((i+1)*12, db.semanas.length)}</div>`;
     }
 }
 function renderWInG(gi) {
@@ -152,23 +221,6 @@ function openW(i) {
     document.getElementById('dias-container').innerHTML = db.semanas[i].dias.map((d, di) => `<div class="card" onclick="openD(${di})">${d.n}</div>`).join('');
     showView('days');
 }
-function openD(di) {
-    activeD = di;
-    const dia = db.semanas[activeW].dias[di];
-    document.getElementById('day-title-header').innerText = dia.n;
-    document.getElementById('ejercicios-container').innerHTML = dia.e.map((ej, ei) => `
-        <div class="card">
-            <strong style="color:var(--neon)">${ej.name}</strong>
-            <div class="ejercicio-row">
-                <div><span style="font-size:0.7rem; color:#666; display:block">PESO</span><input type="number" value="${ej.p}" onchange="upd(${ei},'p',this.value)"></div>
-                <div><span style="font-size:0.7rem; color:#666; display:block">REPS</span><input type="number" value="${ej.r}" onchange="upd(${ei},'r',this.value)"></div>
-                <div><span style="font-size:0.7rem; color:#666; display:block">SETS</span><input type="number" value="${ej.s}" onchange="upd(${ei},'s',this.value)"></div>
-            </div>
-        </div>
-    `).join('');
-    showView('exercises');
-}
-function upd(ei, f, v) { db.semanas[activeW].dias[activeD].e[ei][f] = parseFloat(v); }
 
 let chart;
 function updateRadar() {
@@ -177,7 +229,12 @@ function updateRadar() {
     const data = labels.map(m => {
         let max = 0;
         db.semanas.forEach(s => s.dias.forEach(d => d.e.forEach(e => {
-            if(e.m === m) { let sc = (e.p * e.r)/2; if(sc > max) max = sc; }
+            if(e.m === m) { 
+                e.series.forEach(serie => {
+                    let sc = (serie.p * serie.r)/2; 
+                    if(sc > max) max = sc;
+                });
+            }
         })));
         return Math.min(max, 100);
     });
@@ -188,6 +245,7 @@ function updateRadar() {
         options: { scales: { r: { grid: { color: '#222' }, angleLines: { color: '#222' }, pointLabels: { color: '#888' }, ticks: { display: false }, suggestMax: 100 } }, plugins: { legend: { display: false } } }
     });
 }
+
 updateRadar();
 renderGroups();
 </script>
