@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Pro | Full Routine</title>
+    <title>Symmetry Pro | Mi Rutina</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -36,7 +36,6 @@
         .sidebar-item { padding: 18px 0; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 1px solid #222; }
 
         .card { background: var(--card); border: 1px solid #222; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        
         .ejercicio-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .ej-name { color: var(--text); font-weight: 700; font-size: 0.9rem; }
         
@@ -74,36 +73,36 @@
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
     
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-item" onclick="changeView('charts')">📊 Performance</div>
-        <div class="sidebar-item" onclick="changeView('groups')">💪 Entrenamiento</div>
-        <div class="sidebar-item" onclick="changeView('goals')">🎯 Mis Objetivos</div>
-        <div class="sidebar-item" onclick="resetData()" style="color:#ff4444; margin-top: 20px;">⚠ Reset Total</div>
+        <div class="sidebar-item" onclick="changeView('charts')">📊 Estadísticas</div>
+        <div class="sidebar-item" onclick="changeView('groups')">💪 Mi Rutina</div>
+        <div class="sidebar-item" onclick="changeView('goals')">🎯 Objetivos Ejercicios</div>
+        <div class="sidebar-item" onclick="resetData()" style="color:#ff4444; margin-top: 20px;">⚠ Reset Datos</div>
     </div>
 
     <div id="view-charts">
-        <h3 style="font-size: 0.7rem; color: var(--gray);">Maestría Muscular (%)</h3>
+        <h3 style="font-size: 0.7rem; color: var(--gray);">Maestría Muscular (Objetivo individual)</h3>
         <canvas id="radarMusculos"></canvas>
-        <h3 style="font-size: 0.7rem; color: var(--gray);">Evolución de Volumen (Kg totales)</h3>
+        <h3 style="font-size: 0.7rem; color: var(--gray);">Progresión de Volumen (Fuerza Total)</h3>
         <canvas id="lineProgress"></canvas>
     </div>
 
     <div id="view-goals" class="hidden">
-        <h2>Objetivos 1RM</h2>
-        <p style="color:var(--gray); font-size: 0.7rem; margin-bottom: 20px;">Peso máximo objetivo para cada ejercicio.</p>
+        <h2>Objetivos de Peso</h2>
+        <p style="color:var(--gray); font-size: 0.7rem; margin-bottom: 20px;">Indica el peso que quieres alcanzar en cada uno.</p>
         <div id="goals-list"></div>
         <button class="btn-main" onclick="saveGoals()">Guardar Objetivos</button>
     </div>
 
     <div id="view-groups" class="hidden">
-        <h2>Bloques</h2>
+        <h2>Mis Bloques</h2>
         <div id="groups-container"></div>
-        <button class="btn-main" onclick="nuevaSemana()">+ Nueva Semana</button>
+        <button class="btn-main" onclick="nuevaSemana()">+ Empezar Nueva Semana</button>
     </div>
 
-    <div id="view-weeks" class="hidden"><span class="back-btn" onclick="showView('groups')">← VOLVER</span><div id="semanas-container"></div></div>
-    <div id="view-days" class="hidden"><span class="back-btn" onclick="showView('weeks')">← VOLVER</span><div id="dias-container"></div></div>
+    <div id="view-weeks" class="hidden"><span class="back-btn" onclick="showView('groups')">← BLOQUES</span><div id="semanas-container"></div></div>
+    <div id="view-days" class="hidden"><span class="back-btn" onclick="showView('weeks')">← SEMANAS</span><div id="dias-container"></div></div>
     <div id="view-exercises" class="hidden">
-        <span class="back-btn" onclick="showView('days')">← VOLVER</span>
+        <span class="back-btn" onclick="showView('days')">← VOLVER AL DÍA</span>
         <h2 id="day-title-header" style="color:var(--neon); font-size: 1.2rem;"></h2>
         <div id="ejercicios-container"></div>
         <button class="btn-main" onclick="finalizarYPropagarTotal()">Guardar Sesión</button>
@@ -112,8 +111,8 @@
 <script>
 const musculos = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
 
-// RUTINA COMPLETA DE 5 DÍAS RESTAURADA
-const rutinaMaestraInicial = [
+// RUTINA MAESTRA RESTAURADA SEGÚN TUS DATOS
+const rutinaMaestraOriginal = [
     { n: 'Push 1', e: [
         { name: 'Press Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
         { name: 'Aperturas Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
@@ -139,52 +138,50 @@ const rutinaMaestraInicial = [
         { name: 'Gemelos Sentado', m: 'Pierna', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
     ]},
     { n: 'Push 2', e: [
-        { name: 'Press Plano', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Cruces Polea', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Curl Spider', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Curl Concentrado', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Elevaciones Frontales', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Facepulls', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
+        { name: 'Press Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Aperturas Inclinado', m: 'Pecho', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Curl Biceps Inclinado', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Curl Martillo', m: 'Biceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Elevaciones Laterales', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Press Militar', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
     ]},
     { n: 'Pull 2', e: [
-        { name: 'Jalon al Pecho', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Remo en Polea', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Extensiones Triceps', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Kickbacks', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
-        { name: 'Rueda Abdominal', m: 'Core', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
+        { name: 'Dominadas', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Remo Unilateral', m: 'Espalda', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Elevaciones Posteriores', m: 'Hombro', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Press Cerrado', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Press Frances', m: 'Triceps', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] },
+        { name: 'Dragon Flags', m: 'Core', series: [{p:0,r:0},{p:0,r:0},{p:0,r:0}] }
     ]}
 ];
 
-// Generar lista de objetivos
-let objetivosIniciales = {};
-rutinaMaestraInicial.forEach(d => d.e.forEach(ej => objetivosIniciales[ej.name] = 100));
+let objetivosInic = {};
+rutinaMaestraOriginal.forEach(d => d.e.forEach(ej => objetivosInic[ej.name] = 100));
 
-let db = JSON.parse(localStorage.getItem('gymNeonV13')) || { 
+let db = JSON.parse(localStorage.getItem('gymNeonV14')) || { 
     semanas: [], 
-    rutinaMaestra: rutinaMaestraInicial,
-    objetivosEjercicios: objetivosIniciales
+    rutinaMaestra: rutinaMaestraOriginal,
+    objetivosEjercicios: objetivosInic
 };
 
 let activeW = null, activeD = null;
 let radarChart, lineChart;
 
-function save() { localStorage.setItem('gymNeonV13', JSON.stringify(db)); updateCharts(); }
+function save() { localStorage.setItem('gymNeonV14', JSON.stringify(db)); updateCharts(); }
 
-// OBJETIVOS
 function renderGoals() {
     const cont = document.getElementById('goals-list');
-    let html = "";
-    for (let ej in db.objetivosEjercicios) {
-        html += `<div class="card" style="padding:15px">
+    let listaEjs = [...new Set(rutinaMaestraOriginal.flatMap(d => d.e.map(ej => ej.name)))];
+    cont.innerHTML = listaEjs.map(ej => `
+        <div class="card" style="padding:15px">
             <div style="font-size:0.75rem; margin-bottom:8px">${ej}</div>
-            <input type="number" value="${db.objetivosEjercicios[ej]}" onchange="db.objetivosEjercicios['${ej}'] = parseFloat(this.value)">
-        </div>`;
-    }
-    cont.innerHTML = html;
+            <input type="number" value="${db.objetivosEjercicios[ej] || 100}" onchange="db.objetivosEjercicios['${ej}'] = parseFloat(this.value)">
+        </div>
+    `).join('');
 }
+
 function saveGoals() { save(); alert("Objetivos Guardados"); changeView('charts'); }
 
-// GRÁFICOS
 function updateCharts() {
     const ctxRadar = document.getElementById('radarMusculos');
     const dataMuscular = musculos.map(m => {
@@ -228,7 +225,7 @@ function updateCharts() {
     lineChart = new Chart(ctxLine, {
         type: 'line',
         data: {
-            labels: Array.from({length: 8}, (_, i) => i + 1),
+            labels: Array.from({length: 10}, (_, i) => i + 1),
             datasets: [
                 { label: 'Push', data: historial.Push, borderColor: '#39ff14', tension: 0.4 },
                 { label: 'Pull', data: historial.Pull, borderColor: '#00d4ff', tension: 0.4 },
@@ -239,7 +236,6 @@ function updateCharts() {
     });
 }
 
-// ENTRENAMIENTO
 function renderEjercicios() {
     const dia = db.semanas[activeW].dias[activeD];
     document.getElementById('ejercicios-container').innerHTML = dia.e.map((ej, ei) => `
@@ -283,7 +279,6 @@ function finalizarYPropagarTotal() {
     save(); showView('days');
 }
 
-// NAVEGACIÓN
 function toggleSidebar() { 
     document.getElementById('sidebar').classList.toggle('open'); 
     const over = document.getElementById('overlay');
@@ -321,7 +316,7 @@ function renderWInG(gi) {
 }
 function openW(i) { activeW = i; document.getElementById('dias-container').innerHTML = db.semanas[i].dias.map((d, di) => `<div class="card" onclick="openD(${di})">${d.n}</div>`).join(''); showView('days'); }
 function openD(di) { activeD = di; document.getElementById('day-title-header').innerText = db.semanas[activeW].dias[activeD].n; renderEjercicios(); showView('exercises'); }
-function resetData() { if(confirm("¿Borrar todo?")) { localStorage.removeItem('gymNeonV13'); location.reload(); } }
+function resetData() { if(confirm("¿Borrar todo?")) { localStorage.removeItem('gymNeonV14'); location.reload(); } }
 
 updateCharts();
 renderGroups();
