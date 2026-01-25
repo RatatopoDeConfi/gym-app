@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Neon Pro</title>
+    <title>Symmetry Neon Sidebar</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
@@ -12,241 +12,232 @@
         }
         body { 
             font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); 
-            margin: 0; padding: 20px; padding-top: 70px;
+            margin: 0; padding: 20px; padding-top: 80px; overflow-x: hidden;
         }
         
-        /* MENU HAMBURGUESA */
-        .header { position: fixed; top: 0; left: 0; width: 100%; background: #000; padding: 15px; z-index: 100; display: flex; align-items: center; border-bottom: 1px solid #222; }
-        .menu-btn { cursor: pointer; font-size: 24px; color: var(--neon); margin-right: 20px; }
-        .side-menu { 
-            position: fixed; top: 0; left: -250px; width: 250px; height: 100%; background: #000; 
-            z-index: 200; transition: 0.3s; padding: 40px 20px; border-right: 1px solid var(--neon);
+        /* BOTÓN HAMBURGUESA ARRIBA IZQUIERDA */
+        .header-controls {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            display: flex; align-items: center; padding: 0 20px; z-index: 100;
+            border-bottom: 1px solid #222;
         }
-        .side-menu.open { left: 0; }
-        .menu-item { padding: 15px 0; font-weight: bold; color: var(--text); text-transform: uppercase; cursor: pointer; border-bottom: 1px solid #111; }
-        .menu-item:active { color: var(--neon); }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 150; display: none; }
+        .menu-icon {
+            font-size: 28px; color: var(--neon); cursor: pointer;
+            text-shadow: 0 0 10px var(--neon-dim);
+        }
 
-        /* DISEÑO GENERAL */
-        h2 { text-transform: uppercase; color: var(--neon); text-shadow: 0 0 10px var(--neon-dim); font-size: 1.1rem; }
-        .card { background: var(--card); border: 1px solid #222; padding: 18px; border-radius: 8px; margin-bottom: 15px; position: relative; }
+        /* MENÚ LATERAL DESLIZANTE */
+        .sidebar {
+            position: fixed; top: 0; left: -280px; width: 260px; height: 100%;
+            background: #0a0a0a; z-index: 200; transition: 0.3s ease;
+            border-right: 1px solid var(--neon); padding: 60px 20px;
+            box-shadow: 10px 0 20px rgba(0,0,0,0.5);
+        }
+        .sidebar.open { left: 0; }
+        .sidebar-item {
+            padding: 15px 0; font-size: 1.1rem; font-weight: bold;
+            color: var(--text); text-transform: uppercase; cursor: pointer;
+            border-bottom: 1px solid #1a1a1a; letter-spacing: 1px;
+        }
+        .sidebar-item:active { color: var(--neon); }
+
+        /* FONDO OSCURO AL ABRIR MENÚ */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 150; display: none;
+        }
+
+        /* DISEÑO DE TARJETAS Y CONTENIDO */
+        h2 { text-transform: uppercase; color: var(--neon); font-size: 1.1rem; margin-bottom: 20px; }
+        .card { background: var(--card); border: 1px solid #222; padding: 18px; border-radius: 8px; margin-bottom: 15px; }
         .group-badge { color: var(--neon); font-size: 0.7rem; border: 1px solid var(--neon); padding: 2px 6px; border-radius: 4px; margin-bottom: 10px; display: inline-block; }
-        input { width: 55px; background: transparent; border: none; border-bottom: 1px solid var(--gray); color: var(--neon); text-align: center; font-size: 1rem; outline: none; }
         .ejercicio-row { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
-        .label-min { font-size: 0.7rem; color: var(--gray); display: block; }
-        .btn-main { width: 100%; background: var(--neon); border: none; color: #000; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
-        .btn-save-session { background: transparent; border: 1px solid var(--neon); color: var(--neon); margin-top: 20px; box-shadow: 0 0 10px var(--neon-dim); }
+        input { width: 55px; background: transparent; border: none; border-bottom: 1px solid var(--gray); color: var(--neon); text-align: center; font-size: 1rem; outline: none; }
+        .btn-main { width: 100%; background: var(--neon); border: none; color: #000; padding: 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 15px; }
         .hidden { display: none; }
-        .back-link { color: var(--neon); cursor: pointer; display: block; margin-bottom: 15px; font-size: 0.9rem; }
+        .back-btn { color: var(--neon); cursor: pointer; margin-bottom: 20px; display: inline-block; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="menu-btn" onclick="toggleMenu()">☰</div>
-    <div style="font-weight: bold; letter-spacing: 2px;">SYMMETRY</div>
-</div>
+    <div class="header-controls">
+        <div class="menu-icon" onclick="toggleSidebar()">☰</div>
+        <div style="margin-left: 20px; font-weight: 800; letter-spacing: 2px; font-size: 0.9rem;">SYMMETRY NEON</div>
+    </div>
 
-<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-<div class="side-menu" id="side-menu">
-    <div class="menu-item" onclick="showView('charts')">Gráfica Radar</div>
-    <div class="menu-item" onclick="showView('groups'); renderGroups();">Mis Bloques</div>
-    <div class="menu-item" onclick="toggleMenu()">Cerrar</div>
-</div>
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-item" onclick="changeView('charts')">📊 Radar</div>
+        <div class="sidebar-item" onclick="changeView('groups')">💪 Mis Bloques</div>
+        <div class="sidebar-item" style="color: #ff4444; margin-top: 50px;" onclick="toggleSidebar()">Cerrar</div>
+    </div>
 
-<div id="view-charts">
-    <h2>Nivel de Simetría</h2>
-    <canvas id="radarMusculos"></canvas>
-</div>
+    <div id="view-charts">
+        <h2>Estatus Muscular</h2>
+        <canvas id="radarMusculos"></canvas>
+    </div>
 
-<div id="view-groups" class="hidden">
-    <h2>Mis Bloques (12 Sem)</h2>
-    <div id="groups-container"></div>
-    <button class="btn-main" onclick="crearNuevaSemana()">+ NUEVA SEMANA</button>
-</div>
+    <div id="view-groups" class="hidden">
+        <h2>Bloques (12 Semanas)</h2>
+        <div id="groups-container"></div>
+        <button class="btn-main" onclick="nuevaSemana()">+ CREAR NUEVA SEMANA</button>
+    </div>
 
-<div id="view-weeks" class="hidden">
-    <span class="back-link" onclick="showView('groups')">← BLOQUES</span>
-    <h2 id="group-title">Semanas</h2>
-    <div id="semanas-container"></div>
-</div>
+    <div id="view-weeks" class="hidden">
+        <span class="back-btn" onclick="showView('groups')">← VOLVER A BLOQUES</span>
+        <div id="semanas-container"></div>
+    </div>
 
-<div id="view-days" class="hidden">
-    <span class="back-link" onclick="showView('weeks')">← SEMANAS</span>
-    <h2 id="current-week-title">Días</h2>
-    <div id="dias-container"></div>
-</div>
+    <div id="view-days" class="hidden">
+        <span class="back-btn" onclick="showView('weeks')">← VOLVER A SEMANAS</span>
+        <div id="dias-container"></div>
+    </div>
 
-<div id="view-exercises" class="hidden">
-    <span class="back-link" onclick="showView('days')">← DÍAS</span>
-    <h2 id="current-day-title">Ejercicios</h2>
-    <div id="ejercicios-container"></div>
-    <button class="btn-main btn-save-session" onclick="finalizarEntreno()">✓ GUARDAR Y FINALIZAR</button>
-</div>
+    <div id="view-exercises" class="hidden">
+        <span class="back-btn" onclick="showView('days')">← VOLVER A DÍAS</span>
+        <h2 id="day-title-header"></h2>
+        <div id="ejercicios-container"></div>
+        <button class="btn-main" style="background:transparent; border: 1px solid var(--neon); color: var(--neon);" onclick="finalizar()">✓ GUARDAR ENTRENAMIENTO</button>
+    </div>
 
 <script>
-let db = JSON.parse(localStorage.getItem('gymDataNeonV3')) || { semanas: [] };
-let activeWeekIdx = null;
-let activeDayIdx = null;
+let db = JSON.parse(localStorage.getItem('gymNeonV4')) || { semanas: [] };
+let activeW = null, activeD = null;
 
-const plantillaDias = [
-    { nombre: 'Push 1', ejercicios: [
-        { nombre: 'Press Inclinado', musculo: 'Pecho', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Aperturas Inclinado', musculo: 'Pecho', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Curl Biceps Inclinado', musculo: 'Biceps', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Curl Martillo', musculo: 'Biceps', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Elevaciones Laterales', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Press Militar', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 }
+const rutinaBase = [
+    { n: 'Push 1', e: [
+        { name: 'Press Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 },
+        { name: 'Aperturas Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 },
+        { name: 'Curl Biceps Inclinado', m: 'Biceps', p: 0, r: 0, s: 3 },
+        { name: 'Curl Martillo', m: 'Biceps', p: 0, r: 0, s: 3 },
+        { name: 'Elevaciones Laterales', m: 'Hombro', p: 0, r: 0, s: 3 },
+        { name: 'Press Militar', m: 'Hombro', p: 0, r: 0, s: 3 }
     ]},
-    { nombre: 'Pull 1', ejercicios: [
-        { nombre: 'Dominadas', musculo: 'Espalda', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Remo Unilateral', musculo: 'Espalda', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Elevaciones Posteriores', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Press Cerrado', musculo: 'Triceps', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Press Frances', musculo: 'Triceps', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Dragon Flags', musculo: 'Core', peso: 0, reps: 0, sets: 3 }
+    { n: 'Pull 1', e: [
+        { name: 'Dominadas', m: 'Espalda', p: 0, r: 0, s: 3 },
+        { name: 'Remo Unilateral', m: 'Espalda', p: 0, r: 0, s: 3 },
+        { name: 'Elevaciones Posteriores', m: 'Hombro', p: 0, r: 0, s: 3 },
+        { name: 'Press Cerrado', m: 'Triceps', p: 0, r: 0, s: 3 },
+        { name: 'Press Frances', m: 'Triceps', p: 0, r: 0, s: 3 },
+        { name: 'Dragon Flags', m: 'Core', p: 0, r: 0, s: 3 }
     ]},
-    { nombre: 'Legs', ejercicios: [
-        { nombre: 'Sentadilla Bulgara', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Sentadilla', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Peso Muerto Manc.', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Curl Femoral', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Talones De Pie', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Talones Sentado', musculo: 'Pierna', peso: 0, reps: 0, sets: 3 }
+    { n: 'Legs', e: [
+        { name: 'Sentadilla Bulgara', m: 'Pierna', p: 0, r: 0, s: 3 },
+        { name: 'Sentadilla', m: 'Pierna', p: 0, r: 0, s: 3 },
+        { name: 'Peso Muerto Manc.', m: 'Pierna', p: 0, r: 0, s: 3 },
+        { name: 'Curl Femoral', m: 'Pierna', p: 0, r: 0, s: 3 },
+        { name: 'Gemelos Pie', m: 'Pierna', p: 0, r: 0, s: 3 },
+        { name: 'Gemelos Sentado', m: 'Pierna', p: 0, r: 0, s: 3 }
     ]},
-    { nombre: 'Push 2', ejercicios: [
-        { nombre: 'Press Inclinado', musculo: 'Pecho', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Aperturas Inclinado', musculo: 'Pecho', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Curl Biceps Inclinado', musculo: 'Biceps', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Curl Martillo', musculo: 'Biceps', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Elevaciones Laterales', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Press Militar', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 }
+    { n: 'Push 2', e: [
+        { name: 'Press Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 },
+        { name: 'Aperturas Inclinado', m: 'Pecho', p: 0, r: 0, s: 3 },
+        { name: 'Curl Biceps Inclinado', m: 'Biceps', p: 0, r: 0, s: 3 },
+        { name: 'Curl Martillo', m: 'Biceps', p: 0, r: 0, s: 3 },
+        { name: 'Elevaciones Laterales', m: 'Hombro', p: 0, r: 0, s: 3 },
+        { name: 'Press Militar', m: 'Hombro', p: 0, r: 0, s: 3 }
     ]},
-    { nombre: 'Pull 2', ejercicios: [
-        { nombre: 'Dominadas', musculo: 'Espalda', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Remo Unilateral', musculo: 'Espalda', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Elevaciones Posteriores', musculo: 'Hombro', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Press Cerrado', musculo: 'Triceps', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Press Frances', musculo: 'Triceps', peso: 0, reps: 0, sets: 3 },
-        { nombre: 'Dragon Flags', musculo: 'Core', peso: 0, reps: 0, sets: 3 }
+    { n: 'Pull 2', e: [
+        { name: 'Dominadas', m: 'Espalda', p: 0, r: 0, s: 3 },
+        { name: 'Remo Unilateral', m: 'Espalda', p: 0, r: 0, s: 3 },
+        { name: 'Elevaciones Posteriores', m: 'Hombro', p: 0, r: 0, s: 3 },
+        { name: 'Press Cerrado', m: 'Triceps', p: 0, r: 0, s: 3 },
+        { name: 'Press Frances', m: 'Triceps', p: 0, r: 0, s: 3 },
+        { name: 'Dragon Flags', m: 'Core', p: 0, r: 0, s: 3 }
     ]}
 ];
 
-function toggleMenu() {
-    document.getElementById('side-menu').classList.toggle('open');
-    const overlay = document.getElementById('overlay');
-    overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    const over = document.getElementById('overlay');
+    over.style.display = over.style.display === 'block' ? 'none' : 'block';
 }
 
-function save() { localStorage.setItem('gymDataNeonV3', JSON.stringify(db)); updateRadar(); }
+function changeView(v) {
+    showView(v);
+    if(v === 'groups') renderGroups();
+    toggleSidebar();
+}
 
-function crearNuevaSemana() {
-    const ultima = db.semanas[db.semanas.length - 1];
-    const nueva = {
+function showView(id) {
+    document.querySelectorAll('body > div:not(.header-controls):not(.sidebar):not(.overlay)').forEach(d => d.classList.add('hidden'));
+    document.getElementById('view-' + id).classList.remove('hidden');
+}
+
+function nuevaSemana() {
+    const last = db.semanas[db.semanas.length - 1];
+    db.semanas.push({
         id: db.semanas.length + 1,
-        dias: JSON.parse(JSON.stringify(ultima ? ultima.dias : plantillaDias))
-    };
-    db.semanas.push(nueva);
-    save();
-    renderGroups();
-}
-
-function finalizarEntreno() {
-    save();
-    alert("¡Entreno guardado! Estos valores aparecerán en tu próxima semana.");
-    showView('days');
+        dias: JSON.parse(JSON.stringify(last ? last.dias : rutinaBase))
+    });
+    save(); renderGroups();
 }
 
 function renderGroups() {
-    const container = document.getElementById('groups-container');
-    const numGrupos = Math.ceil(db.semanas.length / 12);
-    let html = "";
-    for(let i = 0; i < numGrupos; i++) {
-        html += `<div class="card" onclick="renderWeeksInGroup(${i})">
-            <span class="group-badge">BLOQUE ${i + 1}</span><br>
-            Semanas ${i * 12 + 1} a ${Math.min((i + 1) * 12, db.semanas.length)}
-        </div>`;
+    const cont = document.getElementById('groups-container');
+    const nG = Math.ceil(db.semanas.length / 12);
+    cont.innerHTML = "";
+    for(let i=0; i<nG; i++) {
+        cont.innerHTML += `<div class="card" onclick="renderWInG(${i})"><span class="group-badge">BLOQUE ${i+1}</span><br>Sem. ${i*12+1} - ${Math.min((i+1)*12, db.semanas.length)}</div>`;
     }
-    container.innerHTML = html || "<p style='color:#444'>Crea tu primera semana para empezar.</p>";
 }
 
-function renderWeeksInGroup(gIdx) {
-    const inicio = gIdx * 12;
-    const fin = Math.min(inicio + 12, db.semanas.length);
-    let html = "";
-    for(let i = inicio; i < fin; i++) {
-        html += `<div class="card" onclick="openWeek(${i})">Semana ${db.semanas[i].id}</div>`;
-    }
-    document.getElementById('semanas-container').innerHTML = html;
+function renderWInG(gi) {
+    const start = gi*12, end = Math.min(start+12, db.semanas.length);
+    let h = "";
+    for(let i=start; i<end; i++) h += `<div class="card" onclick="openW(${i})">Semana ${db.semanas[i].id}</div>`;
+    document.getElementById('semanas-container').innerHTML = h;
     showView('weeks');
 }
 
-function openWeek(idx) {
-    activeWeekIdx = idx;
-    document.getElementById('dias-container').innerHTML = db.semanas[idx].dias.map((d, dIdx) => `
-        <div class="card" onclick="openDay(${dIdx})">${d.nombre}</div>
-    `).join('');
+function openW(i) {
+    activeW = i;
+    document.getElementById('dias-container').innerHTML = db.semanas[i].dias.map((d, di) => `<div class="card" onclick="openD(${di})">${d.n}</div>`).join('');
     showView('days');
 }
 
-function openDay(dIdx) {
-    activeDayIdx = dIdx;
-    document.getElementById('current-day-title').innerText = db.semanas[activeWeekIdx].dias[dIdx].nombre;
-    document.getElementById('ejercicios-container').innerHTML = db.semanas[activeWeekIdx].dias[dIdx].ejercicios.map((ej, eIdx) => `
+function openD(di) {
+    activeD = di;
+    const dia = db.semanas[activeW].dias[di];
+    document.getElementById('day-title-header').innerText = dia.n;
+    document.getElementById('ejercicios-container').innerHTML = dia.e.map((ej, ei) => `
         <div class="card">
-            <strong style="color:var(--neon)">${ej.nombre}</strong>
+            <strong style="color:var(--neon)">${ej.name}</strong>
             <div class="ejercicio-row">
-                <div><span class="label-min">PESO (Kg)</span><input type="number" value="${ej.peso}" onchange="updateEj(${eIdx}, 'peso', this.value)"></div>
-                <div><span class="label-min">REPS</span><input type="number" value="${ej.reps}" onchange="updateEj(${eIdx}, 'reps', this.value)"></div>
-                <div><span class="label-min">SETS</span><input type="number" value="${ej.sets}" onchange="updateEj(${eIdx}, 'sets', this.value)"></div>
+                <div><span style="font-size:0.7rem; color:#666; display:block">PESO</span><input type="number" value="${ej.p}" onchange="upd(${ei},'p',this.value)"></div>
+                <div><span style="font-size:0.7rem; color:#666; display:block">REPS</span><input type="number" value="${ej.r}" onchange="upd(${ei},'r',this.value)"></div>
+                <div><span style="font-size:0.7rem; color:#666; display:block">SETS</span><input type="number" value="${ej.s}" onchange="upd(${ei},'s',this.value)"></div>
             </div>
         </div>
     `).join('');
     showView('exercises');
 }
 
-function updateEj(eIdx, field, val) {
-    db.semanas[activeWeekIdx].dias[activeDayIdx].ejercicios[eIdx][field] = parseFloat(val);
-}
+function upd(ei, f, v) { db.semanas[activeW].dias[activeD].e[ei][f] = parseFloat(v); }
+function save() { localStorage.setItem('gymNeonV4', JSON.stringify(db)); updateRadar(); }
+function finalizar() { save(); alert("Sesión guardada"); showView('days'); }
 
-function showView(vId) {
-    document.querySelectorAll('body > div:not(.header):not(.side-menu):not(.overlay)').forEach(div => div.classList.add('hidden'));
-    document.getElementById('view-' + vId).classList.remove('hidden');
-    if(document.getElementById('side-menu').classList.contains('open')) toggleMenu();
-}
-
-let radarChart;
+let chart;
 function updateRadar() {
     const ctx = document.getElementById('radarMusculos');
     const labels = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
-    const dataNiveles = labels.map(m => {
-        let maxScore = 0;
-        db.semanas.forEach(s => s.dias.forEach(d => d.ejercicios.forEach(e => {
-            if(e.musculo === m) {
-                let score = (e.peso * e.reps) / 1.5; // Ajuste para radar
-                if(score > maxScore) maxScore = score;
-            }
+    const data = labels.map(m => {
+        let max = 0;
+        db.semanas.forEach(s => s.dias.forEach(d => d.e.forEach(e => {
+            if(e.m === m) { let sc = (e.p * e.r)/2; if(sc > max) max = sc; }
         })));
-        return Math.min(maxScore, 100); 
+        return Math.min(max, 100);
     });
-
-    if(radarChart) radarChart.destroy();
-    radarChart = new Chart(ctx, {
+    if(chart) chart.destroy();
+    chart = new Chart(ctx, {
         type: 'radar',
-        data: {
-            labels: labels,
-            datasets: [{ 
-                data: dataNiveles, backgroundColor: 'rgba(57, 255, 20, 0.1)', borderColor: '#39ff14', borderWidth: 2 
-            }]
-        },
-        options: { 
-            scales: { r: { grid: { color: '#222' }, angleLines: { color: '#222' }, ticks: { display: false }, pointLabels: { color: '#888' }, suggestMin: 0, suggestMax: 100 } },
-            plugins: { legend: { display: false } }
-        }
+        data: { labels, datasets: [{ data, backgroundColor: 'rgba(57, 255, 20, 0.1)', borderColor: '#39ff14', borderWidth: 2 }] },
+        options: { scales: { r: { grid: { color: '#222' }, angleLines: { color: '#222' }, pointLabels: { color: '#888' }, ticks: { display: false }, suggestMax: 100 } }, plugins: { legend: { display: false } } }
     });
 }
 
-renderGroups();
 updateRadar();
 </script>
 </body>
