@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Symmetry Neon History</title>
+    <title>Symmetry Neon Unified</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
@@ -52,20 +52,20 @@
     </div>
 
     <div id="view-weeks" class="hidden">
-        <span class="back-btn" onclick="showView('groups')">← VOLVER A BLOQUES</span>
+        <span class="back-btn" onclick="showView('groups')">← VOLVER</span>
         <div id="semanas-container"></div>
     </div>
 
     <div id="view-days" class="hidden">
-        <span class="back-btn" onclick="showView('weeks')">← VOLVER A SEMANAS</span>
+        <span class="back-btn" onclick="showView('weeks')">← VOLVER</span>
         <div id="dias-container"></div>
     </div>
 
     <div id="view-exercises" class="hidden">
-        <span class="back-btn" onclick="showView('days')">← VOLVER A DÍAS</span>
+        <span class="back-btn" onclick="showView('days')">← VOLVER</span>
         <h2 id="day-title-header"></h2>
         <div id="ejercicios-container"></div>
-        <button class="btn-main" onclick="finalizarYPropagarHistorico()">✓ GUARDAR Y ACTUALIZAR FUTURO</button>
+        <button class="btn-main" onclick="finalizarYPropagarTotal()">✓ GUARDAR Y ACTUALIZAR SIGUIENTES</button>
     </div>
 
 <script>
@@ -77,39 +77,39 @@ const rutinaMaestraInicial = [
     { n: 'Pull 2', e: [{ name: 'Dominadas', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Remo Unilateral', m: 'Espalda', p: 0, r: 0, s: 3 }, { name: 'Elevaciones Posteriores', m: 'Hombro', p: 0, r: 0, s: 3 }, { name: 'Press Cerrado', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Press Frances', m: 'Triceps', p: 0, r: 0, s: 3 }, { name: 'Dragon Flags', m: 'Core', p: 0, r: 0, s: 3 }]}
 ];
 
-let db = JSON.parse(localStorage.getItem('gymNeonV7')) || { semanas: [], rutinaMaestra: rutinaMaestraInicial };
+let db = JSON.parse(localStorage.getItem('gymNeonV8')) || { semanas: [], rutinaMaestra: rutinaMaestraInicial };
 let activeW = null, activeD = null;
 
-function save() { localStorage.setItem('gymNeonV7', JSON.stringify(db)); updateRadar(); }
+function save() { localStorage.setItem('gymNeonV8', JSON.stringify(db)); updateRadar(); }
 
 function nuevaSemana() {
     db.semanas.push({ id: db.semanas.length + 1, dias: JSON.parse(JSON.stringify(db.rutinaMaestra)) });
     save(); renderGroups();
 }
 
-function finalizarYPropagarHistorico() {
+function finalizarYPropagarTotal() {
     const diaEditado = db.semanas[activeW].dias[activeD];
-    const categoriaDia = diaEditado.n.split(' ')[0]; // "Push", "Pull" o "Legs"
+    const tipoDia = diaEditado.n.split(' ')[0]; // Detecta "Push", "Pull" o "Legs"
 
-    // 1. Actualizar la Plantilla Maestra (para que nuevas semanas nazcan con esto)
-    db.rutinaMaestra[activeD] = JSON.parse(JSON.stringify(diaEditado));
+    // 1. Actualizar TODOS los días de este tipo en la PLANTILLA MAESTRA
+    db.rutinaMaestra.forEach(dMaestro => {
+        if(dMaestro.n.startsWith(tipoDia)) {
+            dMaestro.e.forEach(ejM => {
+                const ejEditado = diaEditado.e.find(ex => ex.name === ejM.name);
+                if(ejEditado) { ejM.p = ejEditado.p; ejM.r = ejEditado.r; ejM.s = ejEditado.s; }
+            });
+        }
+    });
 
-    // 2. PROPAGAR SOLO AL FUTURO
-    // Iteramos semanas desde la actual
+    // 2. PROPAGAR A SESIONES FUTURAS (Misma semana o siguientes)
     for (let i = activeW; i < db.semanas.length; i++) {
-        db.semanas[i].dias.forEach((d, dIdx) => {
-            // Regla: 
-            // - Si es la misma semana: solo actualiza si el día está DESPUÉS del actual (dIdx > activeD)
-            // - Si es una semana posterior: actualiza todos los días de la misma categoría
-            if (i > activeW || (i === activeW && dIdx > activeD)) {
-                if (d.n.startsWith(categoriaDia)) {
-                    d.e.forEach((ejFuturo, eIdx) => {
-                        const ejActual = diaEditado.e.find(ex => ex.name === ejFuturo.name);
-                        if (ejActual) {
-                            ejFuturo.p = ejActual.p;
-                            ejFuturo.r = ejActual.r;
-                            ejFuturo.s = ejActual.s;
-                        }
+        db.semanas[i].dias.forEach((dFuturo, dfIdx) => {
+            // Solo si es un paso adelante en el tiempo
+            if (i > activeW || (i === activeW && dfIdx > activeD)) {
+                if (dFuturo.n.startsWith(tipoDia)) {
+                    dFuturo.e.forEach(ejF => {
+                        const ejActual = diaEditado.e.find(ex => ex.name === ejF.name);
+                        if(ejActual) { ejF.p = ejActual.p; ejF.r = ejActual.r; ejF.s = ejActual.s; }
                     });
                 }
             }
@@ -117,11 +117,11 @@ function finalizarYPropagarHistorico() {
     }
     
     save();
-    alert(`Entreno de ${diaEditado.n} guardado. Tus marcas anteriores no han sido alteradas.`);
+    alert(`¡Datos de ${tipoDia} sincronizados para todas las próximas sesiones!`);
     showView('days');
 }
 
-// FUNCIONES DE INTERFAZ (Sin cambios)
+// RESTO DE FUNCIONES (Navegación y Render)
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
     const over = document.getElementById('overlay');
