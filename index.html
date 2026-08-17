@@ -53,6 +53,43 @@
         .hidden { display: none; }
         .back-btn { color: var(--gray); cursor: pointer; margin-bottom: 20px; display: inline-block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 150; display: none; }
+
+        /* --- Habit Tracker --- */
+        .habit-summary-card { padding: 22px 20px; }
+        .habit-summary-row { display: flex; justify-content: space-around; text-align: center; }
+        .habit-score-circle-label { font-size: 0.6rem; color: var(--gray); font-family: 'Orbitron'; letter-spacing: 1px; margin-bottom: 6px; }
+        .habit-score-value { font-size: 2.2rem; font-weight: 800; font-family: 'Orbitron'; color: var(--neon); }
+        .habit-score-caption { font-size: 0.7rem; color: var(--gray); margin-top: 4px; }
+
+        .habit-progress-bar { width: 100%; height: 6px; background: #25252b; border-radius: 4px; overflow: hidden; }
+        .habit-progress-bar-lg { height: 10px; margin-top: 18px; }
+        .habit-progress-fill { height: 100%; background: linear-gradient(90deg, #00d4ff, #39ff14); border-radius: 4px; transition: width 0.4s ease; }
+
+        .habit-week-nav { display: flex; justify-content: space-between; align-items: center; margin: 22px 0 14px; }
+
+        .habit-cat-card { background: var(--card); border: 1px solid #333; border-radius: 16px; padding: 18px; margin-bottom: 20px; }
+        .habit-cat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-family: 'Orbitron'; font-size: 0.75rem; color: var(--neon); letter-spacing: 1px; }
+        .habit-add-btn { background: #2a2a30; border: 1px solid #444; color: var(--gray); font-size: 0.65rem; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-family: 'Inter'; text-transform: none; letter-spacing: 0; }
+
+        .habit-row { border-top: 1px solid #2a2a2a; padding: 14px 0; }
+        .habit-row:first-child { border-top: none; padding-top: 0; }
+        .habit-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
+        .habit-name { font-size: 0.85rem; font-weight: 600; }
+        .habit-stats { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: var(--gray); white-space: nowrap; }
+        .habit-streak { color: #ffb020; font-weight: 700; }
+        .habit-trend { font-weight: 700; }
+        .trend-up { color: #39ff14; }
+        .trend-down { color: #ff4444; }
+        .trend-flat { color: #666; }
+        .habit-pct { font-weight: 700; color: var(--text); min-width: 32px; text-align: right; }
+        .habit-del-btn { background: none; border: none; color: #555; font-size: 1rem; cursor: pointer; padding: 0 2px; line-height: 1; }
+
+        .habit-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 10px; }
+        .habit-day-toggle { aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #25252b; color: #666; font-size: 0.7rem; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .habit-day-toggle.done { background: rgba(57, 255, 20, 0.18); color: #39ff14; border-color: rgba(57, 255, 20, 0.4); }
+        .habit-day-toggle.missed { background: rgba(255, 68, 68, 0.10); color: #ff8080; }
+        .habit-day-toggle.today { border-color: var(--neon); }
+        .habit-day-toggle.future { opacity: 0.35; cursor: default; }
     </style>
 </head>
 <body>
@@ -69,6 +106,7 @@
         <div class="sidebar-item" onclick="changeView('calendar')">📅 CALENDARIO DISCIPLINA</div>
         <div class="sidebar-item" onclick="changeView('groups')">💪 MIS RUTINAS</div>
         <div class="sidebar-item" onclick="changeView('goals')">🎯 OBJETIVOS FUERZA</div>
+        <div class="sidebar-item" onclick="changeView('habits')">🔥 HÁBITOS Y VIDA</div>
         <div class="sidebar-item" onclick="resetData()" style="color:var(--red);">⚠ REINICIAR DATOS</div>
     </div>
 
@@ -107,6 +145,36 @@
     <div id="view-weeks" class="hidden"><span class="back-btn" onclick="showView('groups')">← VOLVER</span><div id="semanas-container"></div></div>
     <div id="view-days" class="hidden"><span class="back-btn" onclick="showView('weeks')">← VOLVER</span><div id="dias-container"></div></div>
     <div id="view-goals" class="hidden"><h2>Objetivos</h2><div id="goals-list"></div><button class="btn-main" onclick="saveGoals()">GUARDAR OBJETIVOS</button></div>
+
+    <div id="view-habits" class="hidden">
+        <h2>Hábitos y Vida</h2>
+
+        <div class="card-ejercicio habit-summary-card">
+            <div class="habit-summary-row">
+                <div>
+                    <div class="habit-score-circle-label">DÍA EXITOSO</div>
+                    <div class="habit-score-value" id="habitDailyScoreValue">0%</div>
+                    <div class="habit-score-caption" id="habitDailyScoreLabel"></div>
+                </div>
+                <div>
+                    <div class="habit-score-circle-label">RACHA PERFECTA</div>
+                    <div class="habit-score-value" id="habitPerfectStreak">0</div>
+                    <div class="habit-score-caption">días al 100%</div>
+                </div>
+            </div>
+            <div class="habit-progress-bar habit-progress-bar-lg">
+                <div class="habit-progress-fill" id="habitDailyScoreFill" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div class="habit-week-nav">
+            <button class="btn-s" onclick="changeHabitWeek(-1)">‹</button>
+            <div id="habitWeekLabel" style="font-family:'Orbitron'; color:var(--neon); font-size:0.8rem;"></div>
+            <button class="btn-s" onclick="changeHabitWeek(1)">›</button>
+        </div>
+
+        <div id="habits-container"></div>
+    </div>
 
 <script>
 const musculos = ['Pecho', 'Espalda', 'Pierna', 'Hombro', 'Biceps', 'Triceps'];
@@ -159,9 +227,33 @@ const rutinaMaestraOriginal = [
 let db = JSON.parse(localStorage.getItem('gymNeonV20')) || { semanas: [], rutinaMaestra: [], objetivosEjercicios: {}, fechasEntreno: [] };
 if(db.rutinaMaestra.length === 0) db.rutinaMaestra = JSON.parse(JSON.stringify(rutinaMaestraOriginal));
 
+// --- Habit Tracker: setup ---
+function makeId(prefix) { return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+const defaultHabitCategories = [
+    { name: 'Salud / Fitness', icon: '💪', habits: ['Beber 2L de agua', 'Entrenar / Mover el cuerpo', 'Dormir 7-8h', 'Comer sin ultraprocesados'] },
+    { name: 'Desarrollo Personal', icon: '🧠', habits: ['Leer 20 min', 'Meditar / Respirar', 'Escribir diario'] },
+    { name: 'Trabajo / Estudios', icon: '💼', habits: ['Planificar el día', 'Bloque de trabajo profundo', 'Cero redes en horario laboral'] },
+    { name: 'Finanzas', icon: '💰', habits: ['Registrar gastos del día', 'No gastos impulsivos'] },
+    { name: 'Rutina Diaria', icon: '🌅', habits: ['Hacer la cama', 'Rutina de mañana', 'Rutina nocturna / desconexión'] }
+];
+
+function buildDefaultHabits() {
+    return {
+        categories: defaultHabitCategories.map(cat => ({
+            id: makeId('cat'), name: cat.name, icon: cat.icon,
+            habits: cat.habits.map(h => ({ id: makeId('hab'), name: h }))
+        })),
+        log: {}
+    };
+}
+
+if (!db.habits) db.habits = buildDefaultHabits();
+
 let activeW = null, activeD = null;
 let currentCalDate = new Date();
 let currentCalView = 'month';
+let habitWeekOffset = 0;
 let radarChart, lineChart;
 
 function renderEjercicios() {
@@ -191,12 +283,13 @@ function renderEjercicios() {
         </div>`).join('');
 }
 
-function save() { localStorage.setItem('gymNeonV20', JSON.stringify(db)); updateCharts(); renderCalendar(); }
+function persist() { localStorage.setItem('gymNeonV20', JSON.stringify(db)); }
+function save() { persist(); updateCharts(); renderCalendar(); }
 function updVal(ei, si, f, v) { db.semanas[activeW].dias[activeD].e[ei].series[si][f] = parseFloat(v) || 0; }
 function addSerie(ei) { db.semanas[activeW].dias[activeD].e[ei].series.push({p:0, r:0}); renderEjercicios(); }
 function removeSerie(ei) { if(db.semanas[activeW].dias[activeD].e[ei].series.length > 1) { db.semanas[activeW].dias[activeD].e[ei].series.pop(); renderEjercicios(); } }
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); const over = document.getElementById('overlay'); over.style.display = over.style.display === 'block' ? 'none' : 'block'; }
-function changeView(v) { showView(v); if(v === 'groups') renderGroups(); if(v === 'calendar') renderCalendar(); if(v === 'goals') renderGoals(); toggleSidebar(); }
+function changeView(v) { showView(v); if(v === 'groups') renderGroups(); if(v === 'calendar') renderCalendar(); if(v === 'goals') renderGoals(); if(v === 'habits') renderHabits(); toggleSidebar(); }
 function showView(id) { document.querySelectorAll('body > div:not(.header-controls):not(.sidebar):not(.overlay)').forEach(d => d.classList.add('hidden')); document.getElementById('view-' + id).classList.remove('hidden'); if(id === 'charts') updateCharts(); }
 
 function renderGroups() {
@@ -344,6 +437,152 @@ function updateCharts() {
     lineChart = new Chart(ctxLine, { type: 'line', data: { labels: Array.from({length: 10}, (_, i) => i + 1), datasets: [{ label: 'Push', data: hist.Push.slice(-10), borderColor: '#39ff14' }, { label: 'Pull', data: hist.Pull.slice(-10), borderColor: '#00d4ff' }, { label: 'Legs', data: hist.Legs.slice(-10), borderColor: '#ff0055' }] }, options: { scales: { y: { grid: { color: '#222' } }, x: { display: false } }, plugins: { legend: { labels: { color: '#888', font: { size: 10 } } } } } });
 }
 function resetData() { if(confirm("¿Borrar todo?")) { localStorage.removeItem('gymNeonV20'); location.reload(); } }
+
+// --- Habit Tracker: fechas ---
+const dayLetters = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+function fmtDate(d) { return d.toISOString().split('T')[0]; }
+function getMonday(d) {
+    const date = new Date(d);
+    const day = date.getDay();
+    date.setDate(date.getDate() + (day === 0 ? -6 : 1 - day));
+    date.setHours(0, 0, 0, 0);
+    return date;
+}
+function getWeekDates(offsetWeeks) {
+    const monday = getMonday(new Date());
+    monday.setDate(monday.getDate() + offsetWeeks * 7);
+    return Array.from({ length: 7 }, (_, i) => { const d = new Date(monday); d.setDate(monday.getDate() + i); return d; });
+}
+
+// --- Habit Tracker: datos ---
+function isHabitDone(habitId, dateStr) { return !!(db.habits.log[habitId] && db.habits.log[habitId][dateStr]); }
+function toggleHabit(habitId, dateStr) {
+    if (!db.habits.log[habitId]) db.habits.log[habitId] = {};
+    db.habits.log[habitId][dateStr] = !db.habits.log[habitId][dateStr];
+    if (!db.habits.log[habitId][dateStr]) delete db.habits.log[habitId][dateStr];
+    persist(); renderHabits();
+}
+
+// --- Habit Tracker: métricas ---
+function computeStreak(habitId) {
+    let streak = 0, d = new Date();
+    if (!isHabitDone(habitId, fmtDate(d))) d.setDate(d.getDate() - 1);
+    while (isHabitDone(habitId, fmtDate(d))) { streak++; d.setDate(d.getDate() - 1); }
+    return streak;
+}
+function computeWeekPct(habitId, offsetWeeks) {
+    const dates = getWeekDates(offsetWeeks);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const applicable = dates.filter(d => d <= today);
+    if (applicable.length === 0) return null;
+    const done = applicable.filter(d => isHabitDone(habitId, fmtDate(d))).length;
+    return Math.round((done / applicable.length) * 100);
+}
+function computeTrend(habitId, offsetWeeks) {
+    const cur = computeWeekPct(habitId, offsetWeeks);
+    const prev = computeWeekPct(habitId, offsetWeeks - 1);
+    if (cur === null || prev === null) return 'flat';
+    if (cur > prev) return 'up';
+    if (cur < prev) return 'down';
+    return 'flat';
+}
+function computeDailyScore(dateStr) {
+    let total = 0, done = 0;
+    db.habits.categories.forEach(cat => cat.habits.forEach(h => { total++; if (isHabitDone(h.id, dateStr)) done++; }));
+    return total === 0 ? 0 : Math.round((done / total) * 100);
+}
+function computePerfectStreak() {
+    const totalHabits = db.habits.categories.reduce((s, c) => s + c.habits.length, 0);
+    if (totalHabits === 0) return 0;
+    let streak = 0, d = new Date();
+    if (computeDailyScore(fmtDate(d)) < 100) d.setDate(d.getDate() - 1);
+    while (computeDailyScore(fmtDate(d)) === 100) { streak++; d.setDate(d.getDate() - 1); }
+    return streak;
+}
+function habitScoreLabel(score) {
+    if (score >= 90) return '¡Día perfecto! 🚀';
+    if (score >= 70) return 'Vas muy bien 💪';
+    if (score >= 40) return 'Sigue así, puedes más';
+    if (score > 0) return 'Necesitas mejorar';
+    return 'Aún no has marcado nada hoy';
+}
+
+// --- Habit Tracker: gestión de hábitos ---
+function addHabit(catId) {
+    const name = prompt('Nombre del nuevo hábito/tarea:');
+    if (!name || !name.trim()) return;
+    const cat = db.habits.categories.find(c => c.id === catId);
+    cat.habits.push({ id: makeId('hab'), name: name.trim() });
+    persist(); renderHabits();
+}
+function deleteHabit(catId, habitId) {
+    if (!confirm('¿Eliminar este hábito?')) return;
+    const cat = db.habits.categories.find(c => c.id === catId);
+    cat.habits = cat.habits.filter(h => h.id !== habitId);
+    delete db.habits.log[habitId];
+    persist(); renderHabits();
+}
+function changeHabitWeek(dir) {
+    const newOffset = habitWeekOffset + dir;
+    if (newOffset > 0) return;
+    habitWeekOffset = newOffset;
+    renderHabits();
+}
+
+// --- Habit Tracker: render ---
+function renderHabits() {
+    const todayStr = fmtDate(new Date());
+    const dailyScore = computeDailyScore(todayStr);
+    document.getElementById('habitDailyScoreValue').innerText = dailyScore + '%';
+    document.getElementById('habitDailyScoreFill').style.width = dailyScore + '%';
+    document.getElementById('habitDailyScoreLabel').innerText = habitScoreLabel(dailyScore);
+    document.getElementById('habitPerfectStreak').innerText = computePerfectStreak();
+
+    const dates = getWeekDates(habitWeekOffset);
+    document.getElementById('habitWeekLabel').innerText =
+        `${dates[0].getDate()} ${monthNames[dates[0].getMonth()]} - ${dates[6].getDate()} ${monthNames[dates[6].getMonth()]}`;
+
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+
+    document.getElementById('habits-container').innerHTML = db.habits.categories.map(cat => `
+        <div class="habit-cat-card">
+            <div class="habit-cat-header">
+                <span>${cat.icon} ${cat.name}</span>
+                <button class="habit-add-btn" onclick="addHabit('${cat.id}')">+ Añadir</button>
+            </div>
+            ${cat.habits.map(h => {
+                const streak = computeStreak(h.id);
+                const pct = computeWeekPct(h.id, habitWeekOffset);
+                const trend = computeTrend(h.id, habitWeekOffset);
+                const trendArrow = trend === 'up' ? '▲' : trend === 'down' ? '▼' : '▬';
+                return `
+                <div class="habit-row">
+                    <div class="habit-row-top">
+                        <span class="habit-name">${h.name}</span>
+                        <div class="habit-stats">
+                            <span class="habit-streak">🔥${streak}</span>
+                            <span class="habit-trend trend-${trend}">${trendArrow}</span>
+                            <span class="habit-pct">${pct === null ? '-' : pct + '%'}</span>
+                            <button class="habit-del-btn" onclick="deleteHabit('${cat.id}','${h.id}')">×</button>
+                        </div>
+                    </div>
+                    <div class="habit-days">
+                        ${dates.map(d => {
+                            const dStr = fmtDate(d);
+                            const done = isHabitDone(h.id, dStr);
+                            const isFuture = d > today;
+                            const isPast = d < today;
+                            const missed = isPast && !done;
+                            const isToday = dStr === todayStr;
+                            return `<div class="habit-day-toggle ${done ? 'done' : ''} ${missed ? 'missed' : ''} ${isFuture ? 'future' : ''} ${isToday ? 'today' : ''}" onclick="${isFuture ? '' : `toggleHabit('${h.id}','${dStr}')`}">${dayLetters[(d.getDay() + 6) % 7]}</div>`;
+                        }).join('')}
+                    </div>
+                    <div class="habit-progress-bar"><div class="habit-progress-fill" style="width:${pct || 0}%"></div></div>
+                </div>`;
+            }).join('')}
+        </div>
+    `).join('');
+}
 
 if(db.semanas.length === 0) nuevaSemana();
 updateCharts();
